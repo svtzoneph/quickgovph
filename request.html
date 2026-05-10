@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>QuickGov PH – Request Documents</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0faf8; --sidebar: #0d4f47; --sidebar-active: #17756b; --card: #ffffff;
+    --accent: #0fbfa8; --accent-dark: #0d8c7d; --coral: #ff6b6b; --amber: #ffb84d;
+    --text: #0d2b27; --muted: #6b9e98; --border: #d0ede9; --shadow: 0 4px 20px rgba(13,79,71,0.05);
+  }
+  
+  /* BASE RESET */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); display: flex; overflow-x: hidden; min-height: 100vh; }
+  svg.icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  
+  a { text-decoration: none; color: inherit; }
+
+  /* LOADING SCREEN (Inside Main Area Only) */
+  .page-transition {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg); z-index: 900;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.3s ease; opacity: 1; pointer-events: auto;
+  }
+  .page-transition.hidden { opacity: 0; pointer-events: none; }
+  .spinner-large { width: 40px; height: 40px; border: 4px solid rgba(15,191,168,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .mobile-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 43, 39, 0.5); backdrop-filter: blur(3px); z-index: 90; opacity: 0; visibility: hidden; transition: 0.3s ease; }
+  .mobile-overlay.active { opacity: 1; visibility: visible; }
+
+  /* SIDEBAR */
+  .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 80px; background: var(--sidebar); z-index: 1000; transition: width 0.3s ease; display: flex; flex-direction: column; align-items: center; padding: 24px 0; }
+  .sidebar.expanded { width: 240px; }
+  .sidebar-toggle { position: absolute; right: -14px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; background: var(--accent); border: 2px solid var(--bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; z-index: 101; transition: transform 0.3s; box-shadow: 0 2px 8px rgba(15,191,168,0.4); }
+  .sidebar.expanded .sidebar-toggle { transform: translateY(-50%) rotate(180deg); }
+
+  .sb-logo { width: 100%; height: 44px; display: flex; align-items: center; justify-content: center; margin-bottom: 30px; color: #fff; font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 800; letter-spacing: 2px; transition: all 0.3s; }
+  .sidebar.expanded .sb-logo { font-size: 20px; letter-spacing: 4px; }
+  .sb-menu { width: 100%; padding: 0 12px; display: flex; flex-direction: column; gap: 8px; }
+  
+  .sb-link { display: flex; align-items: center; gap: 14px; padding: 10px; border-radius: 12px; color: rgba(255,255,255,0.6); cursor: pointer; transition: all 0.2s; text-decoration: none; overflow: hidden; white-space: nowrap; }
+  .sb-link:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .sb-link.active { background: var(--sidebar-active); color: #fff; }
+  .sb-icon-wrap { width: 36px; height: 36px; background: rgba(255,255,255,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .sb-link.active .sb-icon-wrap { background: var(--accent); }
+  .sb-text { font-size: 14px; font-weight: 500; }
+  
+  .sidebar-bottom { margin-top: auto; width: 100%; padding: 0 12px; }
+  .user-pill { display: flex; align-items: center; gap: 12px; padding: 10px 8px; border-radius: 12px; background: rgba(255,255,255,0.06); cursor: pointer; overflow: hidden; white-space: nowrap; transition: 0.2s; }
+  .user-pill:hover { background: rgba(255,107,107,0.15); }
+  .user-ava { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--amber), var(--coral)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #fff; flex-shrink: 0; position: relative; overflow: hidden; }
+  .user-ava img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; display: none; }
+  .user-info-box { overflow: hidden; display: flex; flex-direction: column; }
+  .user-info-name { font-size: 13px; font-weight: 700; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+  .user-info-role { font-size: 10px; color: rgba(255,255,255,0.5); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+
+  /* MAIN AREA */
+  .main { position: relative; margin-left: 80px; width: calc(100% - 80px); min-height: 100vh; display: flex; flex-direction: column; transition: margin-left 0.3s, width 0.3s; }
+  .sidebar.expanded ~ .main { margin-left: 240px; width: calc(100% - 240px); }
+
+  /* TOPBAR */
+  .topbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 12px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 80; }
+  .topbar-left { display: flex; align-items: center; }
+  .mobile-menu-btn { display: none; width: 40px; height: 40px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; align-items: center; justify-content: center; cursor: pointer; color: var(--text); margin-right: 12px; }
+  
+  .header-logo-container { height: 44px; display: flex; align-items: center; overflow: visible;}
+  .header-logo-container img { height: 100%; width: auto; max-width: 250px; object-fit: contain; }
+  
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .header-icon-btn { width: 44px; height: 44px; border-radius: 12px; background: #eafaf1; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; color: var(--sidebar); }
+  .header-icon-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .header-icon-btn svg { width: 22px; height: 22px; stroke-width: 2.2;}
+
+  /* CONTENT PAGE */
+  .content { display: grid; grid-template-columns: 1fr 340px; gap: 24px; padding: 10px 32px 32px; align-items: start; }
+  .form-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow); overflow: hidden; }
+  .fc-top { background: linear-gradient(135deg, var(--accent-dark), var(--accent)); padding: 30px 32px; display: flex; justify-content: space-between; align-items: center; color: #fff; }
+  .fc-title { font-size: 22px; font-weight: 800; }
+  .fc-subtitle { font-size: 13px; opacity: 0.9; margin-top: 4px; font-weight: 500;}
+  .fc-step { background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; font-family: 'Space Mono', monospace; font-size: 12px; }
+  
+  .fc-body { padding: 32px; }
+  .field { margin-bottom: 24px; }
+  .field label { display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .field select, .field input { width: 100%; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); font-family: inherit; font-size: 14px; font-weight: 500; color: var(--text); appearance: none; }
+  .field select:focus, .field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(15,191,168,0.1); background: #fff;}
+  .select-wrap { position: relative; }
+  .select-wrap::after { content: '▾'; position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--accent-dark); pointer-events: none; font-size: 14px; font-weight: 800; }
+
+  /* CUSTOM NATIVE UPLOAD AREA */
+  .upload-area { border: 2px dashed var(--border); border-radius: 14px; padding: 32px; text-align: center; background: var(--card); cursor: pointer; transition: 0.2s; color: var(--muted); width: 100%; display: block; position: relative;}
+  .upload-area.dragover { border-color: var(--accent); background: #e6fff9; }
+  .upload-area svg { width: 32px; height: 32px; margin-bottom: 8px; color: var(--accent); }
+  .upload-area p { font-size: 13px; margin: 4px 0; }
+  .upload-area p strong { color: var(--accent-dark); }
+  
+  /* SUCCESS TEXT PREVIEW BOXES */
+  .id-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .id-file-box { background: #eafaf1; border: 1px solid var(--border); border-radius: 8px; padding: 14px; display: none; align-items: center; justify-content: space-between; position: relative; font-size: 12px; color: var(--text); }
+  .id-file-content { display: flex; align-items: center; gap: 8px; }
+  .id-tag { background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 4px 8px; border-radius: 12px; }
+  .id-tag.red { background: var(--coral); }
+  .id-filename { font-weight: 500; font-size: 11px; color: var(--muted); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .id-check { color: var(--accent); }
+  .id-check svg { width: 18px; height: 18px; stroke-width: 2.5;}
+
+  .submit-btn { width: 100%; padding: 16px; background: var(--accent); color: #fff; border: none; border-radius: 12px; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
+  .submit-btn:hover { background: var(--accent-dark); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(15,191,168,0.3); }
+  .submit-btn:disabled { background: var(--muted); transform: none; box-shadow: none; cursor: not-allowed; }
+
+  /* RIGHT PANEL */
+  .right-col { display: flex; flex-direction: column; gap: 20px; }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow); }
+  .panel-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .panel-title { font-weight: 800; font-size: 15px; }
+  .panel-link { font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; text-decoration: none;}
+  
+  .req-list { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto; }
+  .req-row { display: flex; align-items: center; gap: 14px; padding: 14px; border: 1px solid var(--border); border-radius: 14px; background: var(--card); transition: 0.2s;}
+  .req-row:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(15,191,168,0.08); transform: translateY(-1px); }
+  .req-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(255,139,66,0.1); color: #ff8c42; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .req-info { flex: 1; }
+  .req-info h4 { font-size: 13px; font-weight: 800; margin-bottom: 4px; color: var(--text); }
+  .req-info p { font-size: 11px; color: var(--muted); font-weight: 500;}
+  
+  .status-badge { font-size: 10px; font-weight: 800; padding: 5px 10px; border-radius: 20px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .status-pending { background: rgba(255,139,66,0.1); color: #ff8c42; }
+  .status-processing { background: #e6f0ff; color: #4285f4; }
+  .status-ready { background: #e6fff0; color: #34a853; }
+  .empty-state { text-align: center; padding: 20px; font-size: 13px; font-weight: 600; color: var(--muted); }
+
+  /* ACTION GRID */
+  .actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .action-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 14px; text-align: center; cursor: pointer; transition: 0.2s; box-shadow: var(--shadow); }
+  .action-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+  .action-card svg { width: 24px; height: 24px; color: var(--accent-dark); margin-bottom: 10px; }
+  .action-card h4 { font-size: 12px; font-weight: 800; color: var(--text); }
+  .action-card p { font-size: 10px; color: var(--muted); margin-top: 4px; font-weight: 500;}
+
+  @media (max-width: 1024px) { .content { grid-template-columns: 1fr; } }
+  @media (max-width: 768px) {
+    .sidebar { left: -260px; width: 260px; padding-top: 20px; }
+    .sidebar.expanded { left: 0; }
+    .sidebar-toggle { display: none !important; }
+    .main, .sidebar.expanded ~ .main { margin-left: 0; width: 100%; }
+    .mobile-menu-btn { display: flex; }
+    .header-logo-container img { max-width: 180px; }
+    .content { padding: 20px; gap: 20px; }
+    .fc-top { flex-direction: column; align-items: flex-start; gap: 12px; padding: 24px 20px; }
+    .fc-body { padding: 24px 20px; }
+    .id-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="mobile-overlay" id="mobileOverlay" onclick="toggleMenu()"></div>
+
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-toggle" onclick="toggleMenu()"><svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+  <div class="sb-logo">MENU</div>
+  <div class="sb-menu">
+    <a onclick="navigateTo('dashboard.html')" class="sb-link">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div>
+      <span class="sb-text">Dashboard</span>
+    </a>
+    <a onclick="navigateTo('request.html')" class="sb-link active">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+      <span class="sb-text">Request Docs</span>
+    </a>
+    <a href="myrequest.html" class="sb-link">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></div>
+      <span class="sb-text">My Requests</span>
+    </a>
+    <a href="residency.html" class="sb-link">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg></div>
+      <span class="sb-text">Residency Map</span>
+    </a>
+    <a href="#" class="sb-link" style="margin-top: auto;">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></div>
+      <span class="sb-text">Settings</span>
+    </a>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="user-pill" onclick="logoutUser()" title="Click to Sign Out">
+      <div class="user-ava">
+        <span id="userInitialsDisplay">...</span>
+        <img id="userProfileImage" src="" alt="Profile Image">
+      </div>
+      <div class="user-info-box">
+        <div class="user-info-name" id="userNameDisplay">Loading...</div>
+        <div class="user-info-role" id="userAddressDisplay">Fetching details...</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="page-transition" id="pageTransition"><div class="spinner-large"></div></div>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="mobile-menu-btn" onclick="toggleMenu()"><svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+      <div class="header-logo-container">
+        <img src="https://res.cloudinary.com/dlmnmuizk/image/upload/v1778322150/0f9ccf86-1759-49df-95ce-193834ff5090_gbvb9u.png" alt="QuickGov Logo">
+      </div>
+    </div>
+    
+    <div class="topbar-right">
+      <div class="header-icon-btn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+      </div>
+      <div class="header-icon-btn">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    
+    <div class="form-card">
+      <div class="fc-top">
+        <div>
+          <div class="fc-title">New Document Request</div>
+          <div class="fc-subtitle">Fill in the form below to submit your request</div>
+        </div>
+        <div class="fc-step">Step 2/3</div>
+      </div>
+      <div class="fc-body">
+        
+        <div class="field">
+          <label>Document Type</label>
+          <div class="select-wrap">
+            <select id="docType">
+              <option value="" disabled selected>Select Document...</option>
+              <option value="Barangay Clearance">Barangay Clearance</option>
+              <option value="Certificate of Indigency">Certificate of Indigency</option>
+              <option value="Certificate of Residency">Certificate of Residency</option>
+              <option value="Zoning Clearance Application Form">Zoning Clearance Application Form</option>
+              <option value="Building Permit Application Form">Building Permit Application Form</option>
+              <option value="Birth Certificate (local copy)">Birth Certificate (local copy)</option>
+              <option value="Marriage Certificate (local copy)">Marriage Certificate (local copy)</option>
+              <option value="Death Certificate (local copy)">Death Certificate (local copy)</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Purpose of Request</label>
+          <input type="text" id="docPurpose" placeholder="e.g. Employment, Scholarship, Loan..." required>
+        </div>
+
+        <div class="field" id="uploadSection">
+          <label>
+            Upload Valid ID 
+            <span style="font-weight: 500; text-transform: none; color: var(--muted);">(Max 2)</span>
+          </label>
+          
+          <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <svg viewBox="0 0 24 24" class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <p style="margin-bottom: 4px;">Tap to attach ID pictures</p>
+            <p><strong>Browse files</strong> or drag & drop (Max 2)</p>
+            <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
+          </div>
+
+          <div class="id-grid">
+            <div class="id-file-box" id="boxFront">
+              <div class="id-file-content">
+                <span class="id-tag">FRONT ID</span>
+                <span class="id-filename" id="txtFront">filename.jpg</span>
+              </div>
+              <div class="id-check"><svg viewBox="0 0 24 24" class="icon"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+            </div>
+            
+            <div class="id-file-box" id="boxBack">
+              <div class="id-file-content">
+                <span class="id-tag red">BACK ID</span>
+                <span class="id-filename" id="txtBack">filename2.jpg</span>
+              </div>
+              <div class="id-check"><svg viewBox="0 0 24 24" class="icon"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+            </div>
+          </div>
+        </div>
+
+        <button class="submit-btn" id="submitRequestBtn">
+          <svg class="icon" viewBox="0 0 24 24" style="margin-right: 4px;"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          Review & Submit
+        </button>
+      </div>
+    </div>
+
+    <div class="right-col">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">My Requests</div>
+          <div class="panel-link">Click to track progress →</div>
+        </div>
+        <div class="req-list" id="myRequestsList">
+          <div class="empty-state">Loading your requests...</div>
+        </div>
+      </div>
+      
+      <div class="actions-grid">
+        <div class="action-card">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+          <h4>Contact Us</h4><p>Call the barangay</p>
+        </div>
+        <div class="action-card">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          <h4>Get Directions</h4><p>Find barangay hall</p>
+        </div>
+        <div class="action-card">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+          <h4>Requirements</h4><p>View checklist</p>
+        </div>
+        <div class="action-card">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <h4>Live Chat</h4><p>Chat with staff</p>
+        </div>
+      </div>
+      
+    </div>
+
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(() => { document.getElementById('pageTransition').classList.add('hidden'); }, 300);
+  });
+  window.navigateTo = function(url) {
+    document.getElementById('pageTransition').classList.remove('hidden');
+    setTimeout(() => { window.location.href = url; }, 350);
+  }
+  function toggleMenu() {
+    document.getElementById('sidebar').classList.toggle('expanded');
+    document.getElementById('mobileOverlay').classList.toggle('active');
+  }
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+  import { getDatabase, ref, get, child, push, update, onValue, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+  const firebaseConfig = { apiKey: "AIzaSyB12w_rz613qgUI1G9N0JeHpkqs5FC1T-g", authDomain: "quickgov-ph.firebaseapp.com", databaseURL: "https://quickgov-ph-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "quickgov-ph", storageBucket: "quickgov-ph.firebasestorage.app", messagingSenderId: "370121513915", appId: "1:370121513915:web:a9cad3a4af0f18a063429e" };
+  
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+  let currentUser = null;
+  let currentUserData = null;
+  let selectedFiles = []; 
+
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); });
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault(); dropZone.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+  fileInput.addEventListener('change', (e) => {
+    handleFiles(e.target.files);
+  });
+
+  function handleFiles(files) {
+    if (files.length > 2) {
+      alert("You can only select exactly 2 images (Front and Back).");
+    }
+    selectedFiles = Array.from(files).slice(0, 2);
+    updateLocalPreviews();
+  }
+
+  function updateLocalPreviews() {
+    const boxF = document.getElementById('boxFront');
+    const txtF = document.getElementById('txtFront');
+    const boxB = document.getElementById('boxBack');
+    const txtB = document.getElementById('txtBack');
+
+    if(selectedFiles.length > 0) {
+      boxF.style.display = 'flex';
+      txtF.innerText = selectedFiles[0].name;
+    } else {
+      boxF.style.display = 'none';
+    }
+
+    if(selectedFiles.length > 1) {
+      boxB.style.display = 'flex';
+      txtB.innerText = selectedFiles[1].name;
+    } else {
+      boxB.style.display = 'none';
+    }
+  }
+
+  async function uploadToCloudinary(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'valid_id'); 
+    const res = await fetch('https://api.cloudinary.com/v1_1/dlmnmuizk/image/upload', {
+        method: 'POST',
+        body: formData
+    });
+    if(!res.ok) throw new Error("Image upload failed");
+    const data = await res.json();
+    return data.secure_url;
+  }
+
+  document.getElementById('submitRequestBtn').addEventListener('click', async () => {
+    if(!currentUser || !currentUserData) return alert("You must be logged in to submit a request.");
+    
+    const type = document.getElementById('docType').value;
+    const purpose = document.getElementById('docPurpose').value.trim();
+    if (!type) return alert("Please select a document type.");
+    if (!purpose) return alert("Purpose of request is required.");
+
+    if (selectedFiles.length !== 2) {
+      return alert("You must upload exactly 2 photos (Front & Back) of your Valid ID.");
+    }
+
+    const btn = document.getElementById('submitRequestBtn');
+    btn.disabled = true;
+    btn.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; gap:8px;">Uploading IDs securely...</div>`;
+
+    try {
+      const url1 = await uploadToCloudinary(selectedFiles[0]);
+      const url2 = await uploadToCloudinary(selectedFiles[1]);
+      const finalImageUrls = [url1, url2];
+
+      btn.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; gap:8px;">Saving request...</div>`;
+      
+      const reqRef = push(child(ref(db), 'requests')).key;
+      
+      const reqData = {
+        userId: currentUser.uid,
+        userName: currentUserData.fullName || currentUser.displayName,
+        province: currentUserData.province || "",
+        municipality: currentUserData.municipality || "",
+        barangay: currentUserData.barangay || "",
+        address: currentUserData.address || "",
+        docType: type,
+        purpose: purpose,
+        idImages: finalImageUrls,
+        status: "Pending",
+        createdAt: Date.now()
+      };
+
+      const updates = {};
+      // 1. Save to the main pool
+      updates[`requests/${reqRef}`] = reqData;
+      
+      // 2. Save to the exact locational directory
+      if (currentUserData.province && currentUserData.municipality && currentUserData.barangay) {
+        updates[`directory/${currentUserData.province}/${currentUserData.municipality}/${currentUserData.barangay}/requests/${reqRef}`] = reqData;
+      }
+
+      await update(ref(db), updates);
+
+      alert("Request Submitted Successfully!");
+      document.getElementById('docPurpose').value = '';
+      document.getElementById('docType').selectedIndex = 0;
+      selectedFiles = [];
+      updateLocalPreviews();
+
+    } catch (e) {
+      alert("Error submitting request: " + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<svg class="icon" viewBox="0 0 24 24" style="margin-right: 4px;"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg> Review & Submit`;
+    }
+  });
+
+  function listenToMyRequests(uid) {
+    const listContainer = document.getElementById('myRequestsList');
+    const requestsQuery = query(ref(db, 'requests'), orderByChild('userId'), equalTo(uid));
+    
+    onValue(requestsQuery, (snapshot) => {
+      listContainer.innerHTML = ''; 
+      if (!snapshot.exists()) {
+        listContainer.innerHTML = '<div class="empty-state">You have no active requests.</div>';
+        return;
+      }
+
+      const reqs = [];
+      snapshot.forEach(child => { reqs.push({id: child.key, ...child.val()}); });
+      reqs.sort((a,b) => b.createdAt - a.createdAt);
+
+      reqs.forEach(req => {
+        const dateStr = new Date(req.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        let statusClass = "status-pending";
+        if(req.status.toLowerCase().includes('process')) statusClass = "status-processing";
+        if(req.status.toLowerCase().includes('ready') || req.status.toLowerCase().includes('completed') || req.status.toLowerCase().includes('pickup')) statusClass = "status-ready";
+
+        const iconPath = req.docType.includes('Cedula') 
+          ? '<rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>'
+          : '<line x1="3" y1="22" x2="21" y2="22"></line><line x1="6" y1="18" x2="6" y2="11"></line><polygon points="12 2 20 7 4 7 12 2"></polygon>';
+
+        listContainer.innerHTML += `
+          <div class="req-row">
+            <div class="req-icon"><svg class="icon" viewBox="0 0 24 24">${iconPath}</svg></div>
+            <div class="req-info">
+              <h4>${req.docType}</h4>
+              <p>Purpose: ${req.purpose} · ${dateStr}</p>
+            </div>
+            <div class="status-badge ${statusClass}">${req.status.toUpperCase()}</div>
+          </div>
+        `;
+      });
+    });
+  }
+
+  window.logoutUser = async function() {
+    if(confirm("Are you sure you want to sign out?")) {
+      document.getElementById('pageTransition').classList.remove('hidden');
+      await signOut(auth);
+      window.location.href = "index.html";
+    }
+  };
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      currentUser = user;
+      try {
+        const snapshot = await get(child(ref(db), `users/${user.uid}`));
+        const profileImgElem = document.getElementById('userProfileImage');
+        const initialsElem = document.getElementById('userInitialsDisplay');
+
+        if (snapshot.exists()) {
+          currentUserData = snapshot.val();
+          if (currentUserData.status !== "approved") {
+            await signOut(auth);
+            window.location.href = "index.html";
+            return;
+          }
+
+          const fullName = currentUserData.fullName || user.displayName || "User";
+          document.getElementById('userNameDisplay').textContent = fullName;
+          document.getElementById('userAddressDisplay').textContent = currentUserData.address || "✓ Verified Resident";
+
+          if (currentUserData.profileImage || user.photoURL) {
+            profileImgElem.src = currentUserData.profileImage || user.photoURL;
+            profileImgElem.style.display = 'block';
+            initialsElem.style.display = 'none';
+          } else {
+            initialsElem.textContent = fullName.split(" ")[0][0].toUpperCase();
+          }
+
+          listenToMyRequests(user.uid);
+        }
+      } catch (error) { console.error("Auth error:", error); }
+    } else {
+      window.location.href = "index.html";
+    }
+  });
+</script>
+</body>
+</html>

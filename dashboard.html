@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>QuickGov PH – Resident Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0faf8;
+    --sidebar: #0d4f47;
+    --sidebar-active: #17756b;
+    --card: #ffffff;
+    --accent: #0fbfa8;
+    --accent-dark: #0d8c7d;
+    --coral: #ff6b6b;
+    --amber: #ffb84d;
+    --text: #0d2b27;
+    --muted: #6b9e98;
+    --border: #d0ede9;
+    --shadow: 0 4px 20px rgba(13,79,71,0.05);
+  }
+  
+  /* BASE RESET */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    overflow-x: hidden;
+  }
+  svg.icon {
+    width: 20px; height: 20px; fill: none; stroke: currentColor;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  /* LOADING SCREEN */
+  .page-transition {
+    position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+    background: var(--bg); z-index: 99999;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.3s ease; opacity: 1; pointer-events: auto;
+  }
+  .page-transition.hidden { opacity: 0; pointer-events: none; }
+  
+  .spinner-large { 
+    width: 40px; height: 40px; 
+    border: 4px solid rgba(15,191,168,0.2); 
+    border-top-color: var(--accent); 
+    border-radius: 50%; 
+    animation: spin 0.8s linear infinite; 
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* MOBILE OVERLAY */
+  .mobile-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(13, 43, 39, 0.5); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+    z-index: 900; opacity: 0; visibility: hidden; transition: 0.3s ease;
+  }
+  .mobile-overlay.active { opacity: 1; visibility: visible; }
+
+  /* SIDEBAR */
+  .sidebar {
+    position: fixed; top: 0; left: 0; bottom: 0;
+    width: 80px; background: var(--sidebar);
+    z-index: 1000; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s ease;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 24px 0;
+  }
+  .sidebar.expanded { width: 240px; }
+  
+  .sidebar-toggle {
+    position: absolute; right: -14px; top: 50%;
+    transform: translateY(-50%);
+    width: 28px; height: 28px; background: var(--accent);
+    border: 2px solid var(--bg); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; cursor: pointer; z-index: 1001;
+    transition: transform 0.3s; box-shadow: 0 2px 8px rgba(15,191,168,0.4);
+  }
+  .sidebar.expanded .sidebar-toggle { transform: translateY(-50%) rotate(180deg); }
+
+  .sb-logo {
+    width: 100%; height: 44px; 
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 30px; flex-shrink: 0; color: #fff;
+    font-family: 'Space Mono', monospace; font-size: 14px; 
+    font-weight: 800; letter-spacing: 2px; transition: all 0.3s;
+  }
+  .sidebar.expanded .sb-logo { font-size: 20px; letter-spacing: 4px; }
+
+  .sb-menu { width: 100%; padding: 0 12px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto;}
+  .sb-menu::-webkit-scrollbar { display: none; }
+  .sb-link {
+    display: flex; align-items: center; gap: 14px; padding: 10px;
+    border-radius: 12px; color: rgba(255,255,255,0.6); cursor: pointer;
+    transition: all 0.2s; text-decoration: none; overflow: hidden; white-space: nowrap;
+  }
+  .sb-link:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .sb-link.active { background: var(--sidebar-active); color: #fff; border: 1px solid rgba(255,255,255,0.1);}
+  .sb-icon-wrap {
+    width: 36px; height: 36px; background: rgba(255,255,255,0.08);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .sb-link.active .sb-icon-wrap { background: var(--accent); }
+  .sidebar:not(.expanded) .sb-text { display: none; }
+  .sidebar.expanded .sb-text { display: block; font-size: 14px; font-weight: 500; }
+
+  /* DYNAMIC USER PROFILE PILL */
+  .sidebar-bottom { margin-top: auto; width: 100%; padding: 0 12px; }
+  .user-pill {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 8px; border-radius: 12px;
+    background: rgba(255,255,255,0.06); cursor: pointer;
+    overflow: hidden; white-space: nowrap; transition: 0.2s;
+  }
+  .sidebar:not(.expanded) .user-info-box { display: none; }
+  .user-pill:hover { background: rgba(255,107,107,0.15); }
+  .user-ava {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--amber), var(--coral));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; color: #fff; flex-shrink: 0;
+    position: relative; overflow: hidden;
+  }
+  .user-ava img {
+    width: 100%; height: 100%; object-fit: cover;
+    position: absolute; top: 0; left: 0; display: none;
+  }
+  .user-info-box { overflow: hidden; display: flex; flex-direction: column; }
+  .user-info-name { font-size: 13px; font-weight: 700; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+  .user-info-role { font-size: 10px; color: rgba(255,255,255,0.5); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+
+  /* MAIN CONTENT AREA */
+  .main {
+    margin-left: 80px; width: calc(100% - 80px);
+    min-height: 100vh; display: flex; flex-direction: column;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .sidebar.expanded ~ .main { margin-left: 240px; width: calc(100% - 240px); }
+
+  /* TOPBAR */
+  .topbar {
+    background: var(--card); border-bottom: 1px solid var(--border);
+    padding: 12px 32px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 80;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 16px;}
+  .mobile-menu-btn {
+    display: none; background: transparent; border: none;
+    align-items: center; justify-content: center; cursor: pointer; color: var(--text); padding: 4px;
+  }
+  
+  .header-logo-container { display: flex; align-items: center; height: 34px; }
+  .header-logo-container img { height: 100%; width: auto; object-fit: contain; }
+
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .location-tag {
+    display: flex; align-items: center; gap: 6px; background: #e6fff9;
+    color: var(--accent-dark); font-size: 12px; font-weight: 700;
+    padding: 8px 14px; border-radius: 20px; border: 1px solid var(--border);
+  }
+  .icon-btn {
+    width: 40px; height: 40px; border-radius: 10px; background: rgba(15,191,168,0.1);
+    border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: 0.2s; color: var(--accent-dark);
+  }
+  .icon-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* DASHBOARD SPECIFIC STYLES */
+  .dashboard-wrapper { padding-bottom: 40px; }
+
+  .welcome-banner {
+    background: linear-gradient(135deg, var(--sidebar), var(--sidebar-active));
+    margin: 24px 32px 0; border-radius: 20px; padding: 28px 32px; color: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .welcome-banner div { position: relative; z-index: 2; }
+  .welcome-banner h2 { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
+  .welcome-banner p { font-size: 14px; opacity: 0.8; }
+  .welcome-icon { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); width: 100px; height: 100px; opacity: 0.1; z-index: 1; }
+
+  /* STATS ROW */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 24px 32px 0; }
+  .stat-chip {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow); transition: 0.2s;
+  }
+  .stat-chip:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .stat-icon { color: var(--accent-dark); background: rgba(15,191,168,0.1); padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center;}
+  .stat-icon svg { width: 24px; height: 24px; }
+  .stat-num { font-family: 'Space Mono', monospace; font-size: 26px; font-weight: 700; line-height: 1; transition: color 0.3s; color: var(--text); }
+  .stat-label { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--muted); margin-top: 6px; letter-spacing: 0.5px; }
+
+  /* UPDATES FEED */
+  .updates-container { padding: 24px 32px 0; }
+  .section-heading { font-size: 18px; font-weight: 800; margin-bottom: 20px; color: var(--text); }
+  .updates-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+  .update-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    padding: 24px; box-shadow: var(--shadow); transition: 0.2s;
+  }
+  .update-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+  .update-meta { font-size: 11px; font-weight: 800; color: var(--accent-dark); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+  .update-title { font-size: 16px; font-weight: 800; margin-bottom: 10px; color: var(--text); }
+  .update-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  /* MOBILE RESPONSIVE BREAKPOINTS */
+  @media (max-width: 1024px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 768px) {
+    .sidebar { left: -260px; width: 260px; padding-top: 20px; }
+    .sidebar.expanded { left: 0; }
+    .sidebar-toggle { display: none !important; }
+    .sidebar:not(.expanded) .sb-text, .sidebar:not(.expanded) .user-info-box { display: block; }
+    
+    .main, .sidebar.expanded ~ .main { margin-left: 0; width: 100%; }
+    
+    .mobile-menu-btn { display: flex; }
+    .location-tag { display: none; }
+    .topbar { padding: 14px 20px; }
+    .header-logo-container { height: 26px; }
+    
+    .welcome-banner { margin: 20px 20px 0; padding: 24px; }
+    .stats-row { padding: 20px 20px 0; }
+    .updates-container { padding: 20px; }
+  }
+
+  @media (max-width: 480px) {
+    .stats-row { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .stat-chip { padding: 16px 12px; flex-direction: column; align-items: flex-start; gap: 10px; }
+    .stat-num { font-size: 22px; }
+    .stat-label { font-size: 10px; margin-top: 0; }
+    .welcome-banner h2 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="mobile-overlay" id="mobileOverlay" onclick="toggleMenu()"></div>
+
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-toggle" onclick="toggleMenu()">
+    <svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+  </div>
+  
+  <div class="sb-logo">MENU</div>
+
+  <div class="sb-menu">
+    <a href="dashboard.html" class="sb-link active">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div>
+      <span class="sb-text">Dashboard</span>
+    </a>
+    <a href="request.html" class="sb-link">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+      <span class="sb-text">Request Docs</span>
+    </a>
+    <a href="myrequest.html" class="sb-link">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></div>
+      <span class="sb-text">My Requests</span>
+    </a>
+    <a href="residency.html" class="sb-link">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg></div>
+      <span class="sb-text">Residency Map</span>
+    </a>
+    <a href="#" class="sb-link" style="margin-top: auto;">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></div>
+      <span class="sb-text">Settings</span>
+    </a>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="user-pill" onclick="logoutUser()" title="Click to Sign Out">
+      <div class="user-ava">
+        <span id="userInitialsDisplay">...</span>
+        <img id="userProfileImage" src="" alt="Profile Image">
+      </div>
+      <div class="user-info-box">
+        <div class="user-info-name" id="userNameDisplay">Loading...</div>
+        <div class="user-info-role" id="userAddressDisplay">Fetching details...</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="page-transition" id="pageTransition"><div class="spinner-large"></div></div>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="mobile-menu-btn" onclick="toggleMenu()">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+      <div class="header-logo-container">
+        <img src="https://res.cloudinary.com/dlmnmuizk/image/upload/v1778322150/0f9ccf86-1759-49df-95ce-193834ff5090_gbvb9u.png" alt="QuickGov Logo">
+      </div>
+    </div>
+    
+    <div class="topbar-right">
+      <div class="location-tag" id="userLocationTag">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+        Detecting Location...
+      </div>
+      <div class="icon-btn"><svg class="icon" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></div>
+      <div class="icon-btn"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+    </div>
+  </div>
+
+  <div class="dashboard-wrapper">
+    <div class="welcome-banner">
+      <div>
+        <h2>Welcome back, <span id="welcomeNameDisplay">User</span>!</h2>
+        <p>Here is what's happening in your local government today.</p>
+      </div>
+      <svg class="welcome-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 12h3v8h6v-6h2v6h6v-8h3L12 2z"/></svg>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-chip">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" class="icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+        <div>
+          <div class="stat-num" id="stat-active">0</div>
+          <div class="stat-label">Active Requests</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" class="icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+        <div>
+          <div class="stat-num" id="stat-processing">2</div>
+          <div class="stat-label">Days Avg Processing</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" class="icon"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
+        <div>
+          <div class="stat-num" id="stat-completed">0</div>
+          <div class="stat-label">Completed All-Time</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" class="icon"><line x1="3" y1="22" x2="21" y2="22"></line><line x1="6" y1="18" x2="6" y2="11"></line><line x1="10" y1="18" x2="10" y2="11"></line><line x1="14" y1="18" x2="14" y2="11"></line><line x1="18" y1="18" x2="18" y2="11"></line><polygon points="12 2 20 7 4 7 12 2"></polygon></svg></div>
+        <div>
+          <div class="stat-num" id="officeStatusDisplay" style="color: var(--accent-dark);">Open</div>
+          <div class="stat-label">Office Status</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="updates-container">
+      <h3 class="section-heading">Local LGU Updates & Announcements</h3>
+      <div class="updates-grid">
+        <div class="update-card">
+          <div class="update-meta">MAY 9, 2026 • ADVISORY</div>
+          <h4 class="update-title">Scheduled Road Clearing Operations</h4>
+          <p class="update-desc">Local road clearing operations will commence this weekend. Please ensure no vehicles are parked along the main arteries.</p>
+        </div>
+        <div class="update-card">
+          <div class="update-meta">MAY 8, 2026 • HEALTH</div>
+          <h4 class="update-title">Free Dental Mission</h4>
+          <p class="update-desc">The local health center is hosting a free dental mission next Tuesday. Slots are limited, so please secure your queue number early.</p>
+        </div>
+        <div class="update-card">
+          <div class="update-meta">MAY 5, 2026 • COMMUNITY</div>
+          <h4 class="update-title">Upcoming LGU Assembly</h4>
+          <p class="update-desc">Join us for the semi-annual assembly. We will discuss the new digital initiative and community safety guidelines.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleMenu() {
+    document.getElementById('sidebar').classList.toggle('expanded');
+    document.getElementById('mobileOverlay').classList.toggle('active');
+  }
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+  import { getDatabase, ref, get, child, onValue, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB12w_rz613qgUI1G9N0JeHpkqs5FC1T-g",
+    authDomain: "quickgov-ph.firebaseapp.com",
+    databaseURL: "https://quickgov-ph-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "quickgov-ph",
+    storageBucket: "quickgov-ph.firebasestorage.app",
+    messagingSenderId: "370121513915",
+    appId: "1:370121513915:web:a9cad3a4af0f18a063429e"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+
+  window.logoutUser = async function() {
+    if(confirm("Are you sure you want to sign out?")) {
+      document.getElementById('pageTransition').classList.remove('hidden');
+      await signOut(auth);
+      window.location.href = "index.html";
+    }
+  };
+
+  // 1. REAL-TIME OFFICE STATUS & AVG PROCESSING
+  const officeStatusRef = ref(db, 'adminSettings/officeStatus');
+  onValue(officeStatusRef, (snapshot) => {
+    const statusElem = document.getElementById('officeStatusDisplay');
+    if (snapshot.exists()) {
+      const status = snapshot.val();
+      statusElem.textContent = status;
+      statusElem.style.color = status.toLowerCase() === 'closed' ? 'var(--coral)' : 'var(--accent-dark)';
+    } else {
+      statusElem.textContent = "Open";
+    }
+  });
+
+  const avgProcessingRef = ref(db, 'adminSettings/avgProcessingDays');
+  onValue(avgProcessingRef, (snapshot) => {
+    document.getElementById('stat-processing').textContent = snapshot.exists() ? snapshot.val() : "2";
+  });
+
+  // 2. LOAD USER STATS (Requests Counter)
+  function loadUserStats(uid) {
+    const requestsQuery = query(ref(db, 'requests'), orderByChild('userId'), equalTo(uid));
+    onValue(requestsQuery, (snapshot) => {
+      let activeCount = 0;
+      let completedCount = 0;
+
+      if (snapshot.exists()) {
+        snapshot.forEach(child => {
+          const req = child.val();
+          const stat = (req.status || "").toLowerCase();
+          if (stat.includes('ready') || stat.includes('completed') || stat.includes('pickup')) {
+            completedCount++;
+          } else {
+            activeCount++;
+          }
+        });
+      }
+      document.getElementById('stat-active').textContent = activeCount;
+      document.getElementById('stat-completed').textContent = completedCount;
+    });
+  }
+
+  // 3. CHECK AUTH STATE & LOAD USER PROFILE
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      try {
+        const snapshot = await get(child(ref(db), `users/${user.uid}`));
+        const profileImgElem = document.getElementById('userProfileImage');
+        const initialsElem = document.getElementById('userInitialsDisplay');
+
+        if (snapshot.exists()) {
+          const userData = snapshot.val();
+          
+          if (userData.status !== "approved") {
+            alert("Your account is pending review or restricted. You cannot access the dashboard.");
+            await signOut(auth);
+            window.location.href = "index.html";
+            return;
+          }
+
+          // Format Name
+          const fullName = userData.fullName || user.displayName || "User";
+          const nameParts = fullName.split(" ");
+          let initials = nameParts[0][0];
+          if (nameParts.length > 1) {
+            initials += nameParts[nameParts.length - 1][0];
+          }
+
+          document.getElementById('userNameDisplay').textContent = fullName;
+          document.getElementById('welcomeNameDisplay').textContent = nameParts[0]; 
+          document.getElementById('userAddressDisplay').textContent = userData.address || "✓ Verified Resident";
+
+          // DYNAMIC LOCATION TAG & SESSION STORAGE
+          // This prepares the routing so request.html knows exactly where to send the document request
+          if(userData.municipality && userData.province) {
+            document.getElementById('userLocationTag').innerHTML = `
+              <svg class="icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              ${userData.municipality}, ${userData.province}
+            `;
+            
+            // Save location to session storage for request.html routing
+            sessionStorage.setItem('residentProvince', userData.province);
+            sessionStorage.setItem('residentMunicipality', userData.municipality);
+            sessionStorage.setItem('residentBarangay', userData.barangay);
+          }
+
+          // Profile Image Logic
+          const profileImageUrl = userData.profileImage || user.photoURL;
+          if (profileImageUrl) {
+            profileImgElem.src = profileImageUrl;
+            profileImgElem.style.display = 'block';
+            initialsElem.style.display = 'none';
+          } else {
+            profileImgElem.style.display = 'none';
+            initialsElem.style.display = 'block';
+            initialsElem.textContent = initials.toUpperCase();
+          }
+
+          // Trigger fetch for dashboard numbers
+          loadUserStats(user.uid);
+          
+          // Hide Loader
+          document.getElementById('pageTransition').classList.add('hidden');
+          
+        } else {
+          // No user data found
+          await signOut(auth);
+          window.location.href = "index.html";
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    } else {
+      window.location.href = "index.html";
+    }
+  });
+</script>
+
+</body>
+</html>

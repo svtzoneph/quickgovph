@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>QuickGov PH – My Requests</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0faf8; 
+    --sidebar: rgba(13, 79, 71, 0.9); 
+    --sidebar-active: rgba(23, 117, 107, 0.9); 
+    --card: #ffffff;
+    --accent: #0fbfa8; --accent-dark: #0d8c7d; --coral: #ff6b6b; --amber: #ffb84d;
+    --text: #0d2b27; --muted: #6b9e98; --border: #d0ede9; --shadow: 0 4px 20px rgba(13,79,71,0.05);
+    --success: #34a853;
+  }
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); display: flex; overflow-x: hidden; min-height: 100vh; }
+  svg.icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  
+  a { text-decoration: none !important; color: inherit; }
+
+  /* LOADING SCREEN */
+  .page-transition {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg); z-index: 900;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.3s ease; opacity: 1; pointer-events: auto;
+  }
+  .page-transition.hidden { opacity: 0; pointer-events: none; }
+  .spinner-large { width: 40px; height: 40px; border: 4px solid rgba(15,191,168,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .mobile-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 43, 39, 0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 90; opacity: 0; visibility: hidden; transition: 0.3s ease; }
+  .mobile-overlay.active { opacity: 1; visibility: visible; }
+
+  /* SIDEBAR WITH BLUR EFFECT */
+  .sidebar { 
+    position: fixed; top: 0; left: 0; bottom: 0; width: 80px; 
+    background: var(--sidebar); 
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    z-index: 1000; transition: width 0.3s ease; display: flex; flex-direction: column; align-items: center; padding: 24px 0; 
+    border-right: 1px solid rgba(255,255,255,0.05);
+  }
+  .sidebar.expanded { width: 240px; }
+  .sidebar-toggle { position: absolute; right: -14px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; background: var(--accent); border: 2px solid var(--bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; z-index: 101; transition: transform 0.3s; box-shadow: 0 2px 8px rgba(15,191,168,0.4); }
+  .sidebar.expanded .sidebar-toggle { transform: translateY(-50%) rotate(180deg); }
+
+  .sb-logo { width: 100%; height: 44px; display: flex; align-items: center; justify-content: center; margin-bottom: 30px; color: #fff; font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 800; letter-spacing: 2px; transition: all 0.3s; }
+  .sidebar.expanded .sb-logo { font-size: 20px; letter-spacing: 4px; }
+  .sb-menu { width: 100%; padding: 0 12px; display: flex; flex-direction: column; gap: 8px; }
+  .sb-link { display: flex; align-items: center; gap: 14px; padding: 10px; border-radius: 12px; color: rgba(255,255,255,0.6); cursor: pointer; transition: all 0.2s; overflow: hidden; white-space: nowrap; }
+  .sb-link:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .sb-link.active { background: var(--sidebar-active); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
+  .sb-icon-wrap { width: 36px; height: 36px; background: rgba(255,255,255,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .sb-link.active .sb-icon-wrap { background: var(--accent); }
+  .sb-text { font-size: 14px; font-weight: 500; }
+  
+  .sidebar-bottom { margin-top: auto; width: 100%; padding: 0 12px; }
+  .user-pill { display: flex; align-items: center; gap: 12px; padding: 10px 8px; border-radius: 12px; background: rgba(255,255,255,0.06); cursor: pointer; overflow: hidden; white-space: nowrap; transition: 0.2s; border: 1px solid transparent; }
+  .user-pill:hover { background: rgba(255,107,107,0.15); border-color: rgba(255,107,107,0.3); }
+  .user-ava { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--amber), var(--coral)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #fff; flex-shrink: 0; position: relative; overflow: hidden; }
+  .user-ava img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; display: none; }
+  .user-info-box { overflow: hidden; display: flex; flex-direction: column; }
+  .user-info-name { font-size: 13px; font-weight: 700; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+  .user-info-role { font-size: 10px; color: rgba(255,255,255,0.5); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+
+  /* MAIN AREA */
+  .main { position: relative; margin-left: 80px; width: calc(100% - 80px); min-height: 100vh; display: flex; flex-direction: column; transition: margin-left 0.3s, width 0.3s; }
+  .sidebar.expanded ~ .main { margin-left: 240px; width: calc(100% - 240px); }
+
+  /* TOPBAR */
+  .topbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 12px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 80; }
+  .topbar-left { display: flex; align-items: center; }
+  .mobile-menu-btn { display: none; width: 40px; height: 40px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; align-items: center; justify-content: center; cursor: pointer; color: var(--text); margin-right: 12px; }
+  
+  .header-logo-container { height: 40px; display: flex; align-items: center; overflow: visible;}
+  .header-logo-container img { height: 100%; width: auto; max-width: 250px; object-fit: contain; }
+  
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .header-icon-btn { width: 44px; height: 44px; border-radius: 12px; background: #eafaf1; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; color: var(--sidebar); }
+  .header-icon-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* PAGE HEADER */
+  .page-header-container { display: flex; justify-content: space-between; align-items: center; padding: 24px 32px 16px; flex-wrap: wrap; gap: 16px; }
+  .header-titles h1 { font-size: 24px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+  .header-titles p { font-size: 13px; color: var(--muted); font-weight: 500; }
+  
+  .tab-buttons { display: flex; background: #eafaf1; padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
+  .tab-btn { padding: 10px 24px; border: none; background: transparent; border-radius: 10px; font-family: inherit; font-weight: 700; font-size: 13px; color: var(--sidebar); cursor: pointer; transition: 0.2s; }
+  .tab-btn.active { background: #ffffff; color: var(--accent-dark); box-shadow: 0 2px 8px rgba(13,79,71,0.08); }
+
+  /* REQUESTS GRID */
+  .requests-grid { display: grid; grid-template-columns: 1fr; gap: 24px; padding: 0 32px 40px; max-width: 900px; }
+  .empty-state { grid-column: 1 / -1; text-align: center; padding: 40px; font-size: 14px; font-weight: 600; color: var(--muted); background: var(--card); border-radius: 20px; border: 1px dashed var(--border); }
+
+  .req-card { background: var(--card); border-radius: 20px; box-shadow: var(--shadow); padding: 32px; display: flex; flex-direction: column; transition: 0.3s; position: relative; overflow: hidden; border: 1px solid var(--border);}
+  
+  .rc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+  .rc-header h3 { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+  .rc-header p { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .rc-badge { font-size: 10px; font-weight: 800; padding: 6px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
+  
+  .rc-body { font-size: 14px; color: var(--text); font-weight: 500; display: flex; align-items: center; gap: 6px;}
+  .rc-body strong { color: var(--sidebar); font-weight: 800; }
+
+  /* FIXED STEPPER CSS */
+  .stepper-wrap { position: relative; margin: 30px 40px 20px; padding-bottom: 24px; border-bottom: 1px dashed var(--border); }
+  .stepper-track { position: absolute; top: 13px; left: 0; right: 0; height: 4px; background: #e5e7eb; z-index: 1; border-radius: 2px;}
+  .stepper-fill { position: absolute; top: 13px; left: 0; height: 4px; z-index: 2; transition: width 0.4s ease, background 0.4s ease; border-radius: 2px;}
+  
+  .stepper-steps { display: flex; justify-content: space-between; position: relative; z-index: 3; margin: 0 -40px; }
+  .step-item { display: flex; flex-direction: column; align-items: center; width: 80px; gap: 10px; }
+  .step-dot { width: 30px; height: 30px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; transition: background 0.4s ease; box-shadow: 0 0 0 6px var(--card); }
+  .step-label { font-size: 10px; font-weight: 800; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; transition: color 0.4s ease; text-align: center;}
+
+  /* STATE: PENDING (STRICTLY ORANGE) */
+  .req-card.pending .rc-badge { background: rgba(255,139,66,0.1); color: #ff8c42; }
+  .req-card.pending .step-item:nth-child(1) .step-dot { background: #ff8c42; }
+  .req-card.pending .step-item:nth-child(1) .step-label { color: #ff8c42; }
+  .req-card.pending .stepper-fill { width: 0%; background: #ff8c42; }
+
+  /* STATE: ON PROCESS (STRICTLY BLUE) */
+  .req-card.processing .rc-badge { background: #e6f0ff; color: #4285f4; }
+  .req-card.processing .step-item:nth-child(1) .step-dot,
+  .req-card.processing .step-item:nth-child(2) .step-dot { background: #4285f4; }
+  .req-card.processing .step-item:nth-child(1) .step-label,
+  .req-card.processing .step-item:nth-child(2) .step-label { color: #4285f4; }
+  .req-card.processing .stepper-fill { width: 50%; background: #4285f4; }
+
+  /* STATE: READY FOR PICKUP (STRICTLY GREEN) */
+  .req-card.ready .rc-badge { background: #eafaf1; color: var(--success); }
+  .req-card.ready .step-item .step-dot { background: var(--success); }
+  .req-card.ready .step-item .step-label { color: var(--success); }
+  .req-card.ready .stepper-fill { width: 100%; background: var(--success); }
+
+  /* STATE: COMPLETED (GRAYSCALE/DISABLED) */
+  .req-card.completed { background: #f9fafb; filter: grayscale(100%); pointer-events: none; opacity: 0.6;}
+  .req-card.completed .rc-badge { background: #e5e7eb; color: #4b5563; }
+  .req-card.completed .step-item .step-dot { background: #9ca3af; }
+  .req-card.completed .step-item .step-label { color: #9ca3af; }
+  .req-card.completed .stepper-fill { width: 100%; background: #9ca3af; }
+  .req-card.completed .confirm-btn { display: none; }
+
+  /* CONFIRM BUTTON ROW */
+  .action-row { display: flex; justify-content: flex-end; }
+  .confirm-btn { background: var(--success); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer; transition: 0.2s; display: none; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(52,168,83,0.25);}
+  .confirm-btn:hover { background: #278240; transform: translateY(-2px); }
+  .req-card.ready .confirm-btn { display: flex; }
+  
+  .completed-text { font-size: 13px; font-weight: 800; color: #4b5563; display: none; align-items: center; gap: 6px; width: 100%; justify-content: center;}
+  .req-card.completed .completed-text { display: flex; }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .sidebar { left: -260px; width: 260px; padding-top: 20px; }
+    .sidebar.expanded { left: 0; }
+    .sidebar-toggle { display: none !important; }
+    .main, .sidebar.expanded ~ .main { margin-left: 0; width: 100%; }
+    .mobile-menu-btn { display: flex; }
+    .header-logo-container img { max-width: 180px; }
+    .page-header-container { flex-direction: column; align-items: flex-start; padding: 20px 20px 16px; }
+    .requests-grid { padding: 0 20px 40px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="mobile-overlay" id="mobileOverlay" onclick="toggleMenu()"></div>
+
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-toggle" onclick="toggleMenu()"><svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+  <div class="sb-logo">MENU</div>
+  <div class="sb-menu">
+    <a onclick="navigateTo('dashboard.html')" class="sb-link">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div>
+      <span class="sb-text">Dashboard</span>
+    </a>
+    <a onclick="navigateTo('request.html')" class="sb-link">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+      <span class="sb-text">Request Docs</span>
+    </a>
+    <a onclick="navigateTo('myrequest.html')" class="sb-link active">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></div>
+      <span class="sb-text">My Requests</span>
+    </a>
+    <a onclick="navigateTo('residency.html')" class="sb-link">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg></div>
+      <span class="sb-text">Residency Map</span>
+    </a>
+    <a href="#" class="sb-link" style="margin-top: auto;">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></div>
+      <span class="sb-text">Settings</span>
+    </a>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="user-pill" onclick="logoutUser()" title="Click to Sign Out">
+      <div class="user-ava">
+        <span id="userInitialsDisplay">...</span>
+        <img id="userProfileImage" src="" alt="Profile Image">
+      </div>
+      <div class="user-info-box">
+        <div class="user-info-name" id="userNameDisplay">Loading...</div>
+        <div class="user-info-role" id="userAddressDisplay">Fetching details...</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="page-transition" id="pageTransition"><div class="spinner-large"></div></div>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="mobile-menu-btn" onclick="toggleMenu()"><svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+      <div class="header-logo-container">
+        <img src="https://res.cloudinary.com/dlmnmuizk/image/upload/v1778322150/0f9ccf86-1759-49df-95ce-193834ff5090_gbvb9u.png" alt="QuickGov Logo">
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="header-icon-btn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+      </div>
+      <div class="header-icon-btn">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-header-container">
+    <div class="header-titles">
+      <h1>My Document Requests</h1>
+      <p>Track the status of your submitted documents here.</p>
+    </div>
+    
+    <div class="tab-buttons">
+      <button class="tab-btn active" id="tab-active" onclick="switchTab('active')">Active</button>
+      <button class="tab-btn" id="tab-successful" onclick="switchTab('successful')">Successful</button>
+    </div>
+  </div>
+
+  <div class="requests-grid" id="myRequestsContainer">
+    <div class="empty-state">Loading your requests...</div>
+  </div>
+
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(() => { document.getElementById('pageTransition').classList.add('hidden'); }, 300);
+  });
+  window.navigateTo = function(url) {
+    document.getElementById('pageTransition').classList.remove('hidden');
+    setTimeout(() => { window.location.href = url; }, 350);
+  }
+  function toggleMenu() {
+    document.getElementById('sidebar').classList.toggle('expanded');
+    document.getElementById('mobileOverlay').classList.toggle('active');
+  }
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+  import { getDatabase, ref, get, update, child, onValue, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+  const firebaseConfig = { apiKey: "AIzaSyB12w_rz613qgUI1G9N0JeHpkqs5FC1T-g", authDomain: "quickgov-ph.firebaseapp.com", databaseURL: "https://quickgov-ph-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "quickgov-ph", storageBucket: "quickgov-ph.firebasestorage.app", messagingSenderId: "370121513915", appId: "1:370121513915:web:a9cad3a4af0f18a063429e" };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+
+  let allRequests = [];
+  let currentTab = 'active';
+  let currentUserData = null; // Store user location data
+
+  window.switchTab = function(tabName) {
+    currentTab = tabName;
+    document.getElementById('tab-active').classList.toggle('active', tabName === 'active');
+    document.getElementById('tab-successful').classList.toggle('active', tabName === 'successful');
+    renderRequests();
+  };
+
+  // MULTI-PATH UPDATE FOR CONFIRMING RECEIPT
+  window.confirmReceipt = async function(reqId) {
+    if(confirm("Have you successfully received your requested document?")) {
+      try {
+        const updates = {};
+        
+        // 1. Update in the global requests pool
+        updates[`requests/${reqId}/status`] = "Completed";
+        
+        // 2. Update in the specific location directory
+        if (currentUserData && currentUserData.province && currentUserData.municipality && currentUserData.barangay) {
+          updates[`directory/${currentUserData.province}/${currentUserData.municipality}/${currentUserData.barangay}/requests/${reqId}/status`] = "Completed";
+        }
+
+        await update(ref(db), updates);
+      } catch(e) {
+        alert("Error confirming receipt: " + e.message);
+      }
+    }
+  };
+
+  function renderRequests() {
+    const container = document.getElementById('myRequestsContainer');
+    container.innerHTML = '';
+
+    const filteredReqs = allRequests.filter(req => {
+      const stat = (req.status || "").toLowerCase();
+      const isCompleted = stat.includes('complet') || stat.includes('receiv');
+      
+      if (currentTab === 'active') return !isCompleted;
+      return isCompleted; 
+    });
+
+    if (filteredReqs.length === 0) {
+      container.innerHTML = `<div class="empty-state">No ${currentTab} document requests found.</div>`;
+      return;
+    }
+
+    filteredReqs.forEach(req => {
+      const dateOptions = { month: 'long', day: 'numeric', year: 'numeric' };
+      const dateStr = new Date(req.createdAt).toLocaleDateString('en-US', dateOptions);
+      
+      let statusClass = "pending";
+      let badgeText = "PENDING";
+      let dbStatus = (req.status || "").toLowerCase();
+
+      if (dbStatus.includes('process')) { 
+        statusClass = "processing"; 
+        badgeText = "ON PROCESS"; 
+      } else if (dbStatus.includes('ready') || dbStatus.includes('pickup')) { 
+        statusClass = "ready"; 
+        badgeText = "READY FOR PICKUP"; 
+      } else if (dbStatus.includes('complet') || dbStatus.includes('receiv')) { 
+        statusClass = "completed"; 
+        badgeText = "COMPLETED"; 
+      }
+
+      const cardHTML = `
+        <div class="req-card ${statusClass}">
+          <div class="rc-header">
+            <div>
+              <h3>${req.docType}</h3>
+              <p>Requested on ${dateStr}</p>
+            </div>
+            <div class="rc-badge">${badgeText}</div>
+          </div>
+          
+          <div class="rc-body">
+            <strong>Purpose:</strong> ${req.purpose}
+          </div>
+
+          <div class="stepper-wrap">
+            <div class="stepper-track"></div>
+            <div class="stepper-fill"></div>
+            <div class="stepper-steps">
+              <div class="step-item">
+                <div class="step-dot"></div>
+                <div class="step-label">PENDING</div>
+              </div>
+              <div class="step-item">
+                <div class="step-dot"></div>
+                <div class="step-label">ON PROCESS</div>
+              </div>
+              <div class="step-item">
+                <div class="step-dot"></div>
+                <div class="step-label">READY</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button class="confirm-btn" onclick="confirmReceipt('${req.id}')">
+              <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Confirm Receipt
+            </button>
+            <span class="completed-text">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              Document Received and Completed
+            </span>
+          </div>
+        </div>
+      `;
+      
+      container.innerHTML += cardHTML;
+    });
+  }
+
+  // LISTENING TO USER'S DIRECTORY REQUESTS INSTEAD OF GLOBAL
+  function loadRequestsTracker(uid, province, municipality, barangay) {
+    let requestsQuery;
+    
+    if (province && municipality && barangay) {
+      // Use directory structure for speed and organization
+      requestsQuery = query(ref(db, `directory/${province}/${municipality}/${barangay}/requests`), orderByChild('userId'), equalTo(uid));
+    } else {
+      // Fallback
+      requestsQuery = query(ref(db, 'requests'), orderByChild('userId'), equalTo(uid));
+    }
+
+    onValue(requestsQuery, (snapshot) => {
+      allRequests = [];
+      if (snapshot.exists()) {
+        snapshot.forEach(child => { allRequests.push({id: child.key, ...child.val()}); });
+        allRequests.sort((a,b) => b.createdAt - a.createdAt);
+      }
+      renderRequests();
+    });
+  }
+
+  window.logoutUser = async function() {
+    if(confirm("Are you sure you want to sign out?")) {
+      document.getElementById('pageTransition').classList.remove('hidden');
+      await signOut(auth);
+      window.location.href = "index.html";
+    }
+  };
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      try {
+        const snapshot = await get(child(ref(db), `users/${user.uid}`));
+        const profileImgElem = document.getElementById('userProfileImage');
+        const initialsElem = document.getElementById('userInitialsDisplay');
+
+        if (snapshot.exists()) {
+          currentUserData = snapshot.val();
+          if (currentUserData.status !== "approved") {
+            await signOut(auth);
+            window.location.href = "index.html";
+            return;
+          }
+
+          const fullName = currentUserData.fullName || user.displayName || "User";
+          document.getElementById('userNameDisplay').textContent = fullName;
+          document.getElementById('userAddressDisplay').textContent = currentUserData.address || "✓ Verified Resident";
+
+          if (currentUserData.profileImage || user.photoURL) {
+            profileImgElem.src = currentUserData.profileImage || user.photoURL;
+            profileImgElem.style.display = 'block';
+            initialsElem.style.display = 'none';
+          } else {
+            initialsElem.textContent = fullName.split(" ")[0][0].toUpperCase();
+          }
+
+          // Trigger listener using exact location data
+          loadRequestsTracker(user.uid, currentUserData.province, currentUserData.municipality, currentUserData.barangay);
+        }
+      } catch (error) { console.error("Auth error:", error); }
+    } else {
+      window.location.href = "index.html";
+    }
+  });
+</script>
+</body>
+</html>
