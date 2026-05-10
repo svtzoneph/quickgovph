@@ -327,13 +327,13 @@
         } else {
           // Not an admin, kick them out
           await signOut(auth);
-          window.location.href = "admin-login.html";
+          window.location.href = "login.html";
         }
       } catch(e) {
         console.error(e);
       }
     } else {
-      window.location.href = "admin-login.html";
+      window.location.href = "login.html";
     }
   });
 
