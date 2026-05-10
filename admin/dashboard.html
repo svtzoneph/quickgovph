@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>QuickGov PH – Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0faf8; 
+    --sidebar: #0d4f47; 
+    --sidebar-active: #17756b; 
+    --card: #ffffff;
+    --accent: #0fbfa8; --accent-dark: #0d8c7d; --coral: #ff6b6b; --amber: #ffb84d;
+    --text: #0d2b27; --muted: #6b9e98; --border: #d0ede9; --shadow: 0 4px 20px rgba(13,79,71,0.05);
+    
+    /* Chart / Stat Colors */
+    --c-primary: #4285F4;
+    --c-success: #34A853;
+    --c-warning: #FBBC05;
+    --c-danger: #EA4335;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); display: flex; overflow-x: hidden; min-height: 100vh; }
+  svg.icon { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  a { text-decoration: none !important; color: inherit; }
+
+  /* LOADING SCREEN */
+  .page-transition {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg); z-index: 99999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 0.3s ease; opacity: 1; pointer-events: auto;
+  }
+  .page-transition.hidden { opacity: 0; pointer-events: none; }
+  .spinner-large { width: 40px; height: 40px; border: 4px solid rgba(15,191,168,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px;}
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* MOBILE OVERLAY */
+  .mobile-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 43, 39, 0.5); backdrop-filter: blur(4px); z-index: 999; opacity: 0; visibility: hidden; transition: 0.3s ease; }
+  .mobile-overlay.active { opacity: 1; visibility: visible; }
+
+  /* SIDEBAR */
+  .sidebar { 
+    position: fixed; top: 0; left: 0; bottom: 0; width: 80px; 
+    background: var(--sidebar); backdrop-filter: blur(12px);
+    z-index: 1000; transition: width 0.3s ease, left 0.3s ease; display: flex; flex-direction: column; align-items: center; padding: 24px 0; 
+    border-right: 1px solid rgba(255,255,255,0.05); color: #fff;
+  }
+  .sidebar.expanded { width: 240px; }
+  .sidebar-toggle { position: absolute; right: -14px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; background: var(--accent); border: 2px solid #0d4f47; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 101; transition: 0.3s; }
+  .sidebar.expanded .sidebar-toggle { transform: translateY(-50%) rotate(180deg); }
+
+  .sb-logo { width: 100%; height: 44px; display: flex; align-items: center; justify-content: center; margin-bottom: 30px; font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 800; letter-spacing: 2px; }
+  .sidebar.expanded .sb-logo { font-size: 20px; letter-spacing: 4px; }
+  
+  .sb-menu { width: 100%; padding: 0 12px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto;}
+  .sb-menu::-webkit-scrollbar { display: none; }
+  .sb-link { display: flex; align-items: center; gap: 14px; padding: 10px; border-radius: 12px; color: rgba(255,255,255,0.6); cursor: pointer; transition: 0.2s; white-space: nowrap; }
+  .sb-link:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .sb-link.active { background: var(--sidebar-active); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
+  .sb-icon-wrap { width: 36px; height: 36px; background: rgba(255,255,255,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .sb-link.active .sb-icon-wrap { background: var(--accent); }
+  .sidebar:not(.expanded) .sb-text { display: none; }
+  .sidebar.expanded .sb-text { display: block; font-size: 14px; font-weight: 500; }
+  
+  .sidebar-bottom { margin-top: auto; width: 100%; padding: 0 12px; }
+  .user-pill { display: flex; align-items: center; gap: 12px; padding: 10px 8px; border-radius: 12px; background: rgba(255,255,255,0.06); cursor: pointer; overflow: hidden; white-space: nowrap; transition: 0.2s; border: 1px solid transparent; }
+  .sidebar:not(.expanded) .user-info-box { display: none; }
+  .user-pill:hover { background: rgba(255,107,107,0.15); border-color: rgba(255,107,107,0.3); }
+  .user-ava { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--amber), var(--coral)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #fff; flex-shrink: 0; position: relative; overflow: hidden; }
+  .user-info-box { overflow: hidden; display: flex; flex-direction: column; }
+  .user-info-name { font-size: 13px; font-weight: 700; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+  .user-info-role { font-size: 10px; color: rgba(255,255,255,0.5); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+
+  /* MAIN AREA */
+  .main { position: relative; margin-left: 80px; width: calc(100% - 80px); min-height: 100vh; display: flex; flex-direction: column; transition: 0.3s; }
+  .sidebar.expanded ~ .main { margin-left: 240px; width: calc(100% - 240px); }
+
+  /* TOPBAR */
+  .topbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 80; }
+  .topbar-left { display: flex; align-items: center; gap: 16px; }
+  .mobile-menu-btn { display: none; background: transparent; border: none; align-items: center; justify-content: center; cursor: pointer; color: var(--text); padding: 4px; border-radius: 8px;}
+  .header-logo-container img { height: 34px; object-fit: contain; }
+
+  /* PAGE CONTENT */
+  .content { padding: 32px; flex: 1; display: flex; flex-direction: column; max-width: 1200px; margin: 0 auto; width: 100%;}
+  .page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;}
+  .page-header h1 { font-size: 24px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+  .page-header p { font-size: 13px; color: var(--muted); font-weight: 500; }
+
+  /* DASHBOARD WIDGETS */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 32px;}
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 24px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 20px; transition: 0.3s;}
+  .stat-card:hover { transform: translateY(-4px); border-color: var(--accent); }
+  
+  .stat-icon { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .icon-blue { background: rgba(66, 133, 244, 0.1); color: var(--c-primary); }
+  .icon-green { background: rgba(52, 168, 83, 0.1); color: var(--c-success); }
+  .icon-yellow { background: rgba(251, 188, 5, 0.1); color: var(--c-warning); }
+  .icon-red { background: rgba(234, 67, 53, 0.1); color: var(--c-danger); }
+  .stat-icon svg { width: 28px; height: 28px; }
+
+  .stat-info h3 { font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;}
+  .stat-info .val { font-size: 28px; font-weight: 800; color: var(--text); line-height: 1;}
+
+  /* 2-COLUMN LAYOUT BELOW STATS */
+  .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+  
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column;}
+  .panel-header { padding: 20px 24px; border-bottom: 1px solid var(--border); background: #f8fdfb; display: flex; justify-content: space-between; align-items: center;}
+  .panel-header h3 { font-size: 15px; font-weight: 800; color: var(--text); }
+  .panel-link { font-size: 12px; font-weight: 700; color: var(--accent-dark); text-decoration: none;}
+  .panel-link:hover { text-decoration: underline; }
+
+  .panel-body { padding: 24px; flex: 1;}
+
+  /* LIST ITEMS */
+  .quick-list { display: flex; flex-direction: column; gap: 12px; }
+  .list-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--border); border-radius: 12px; transition: 0.2s;}
+  .list-item:hover { border-color: var(--accent); background: #fafffe; }
+  
+  .item-left { display: flex; align-items: center; gap: 12px; }
+  .item-ava { width: 36px; height: 36px; border-radius: 10px; background: #eafaf1; color: var(--accent-dark); font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 14px;}
+  .item-info h4 { font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 2px;}
+  .item-info p { font-size: 11px; color: var(--muted); font-weight: 500;}
+
+  .item-badge { font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.5px;}
+  .badge-pending { background: #fff4e6; color: var(--c-warning); }
+
+  /* 📱 MOBILE RESPONSIVE TWEAKS */
+  @media (max-width: 768px) {
+    .sidebar { left: -280px; width: 280px; padding-top: 20px; }
+    .sidebar.expanded { left: 0; }
+    .sidebar-toggle { display: none !important; }
+    .sidebar:not(.expanded) .sb-text, .sidebar:not(.expanded) .user-info-box { display: block; }
+    
+    .main, .sidebar.expanded ~ .main { margin-left: 0; width: 100%; }
+    
+    .topbar { padding: 12px 20px; }
+    .mobile-menu-btn { display: flex; }
+    .header-logo-container img { max-width: 180px; } 
+
+    .content { padding: 20px; }
+    .page-header { flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 20px;}
+    
+    .dashboard-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="mobile-overlay" id="mobileOverlay" onclick="toggleMenu()"></div>
+
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-toggle" onclick="toggleMenu()"><svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+  <div class="sb-logo">ADMIN</div>
+  <div class="sb-menu">
+    <a href="#" class="sb-link active">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg></div>
+      <span class="sb-text">Dashboard</span>
+    </a>
+    <a href="manage-requests.html" class="sb-link">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+      <span class="sb-text">Manage Requests</span>
+    </a>
+    <a href="alerts.html" class="sb-link">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+      <span class="sb-text">Emergency Alerts</span>
+    </a>
+    <a href="residentlist.html" class="sb-link">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
+      <span class="sb-text">Residents List</span>
+    </a>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="user-pill" onclick="logoutAdmin()" title="Click to Sign Out">
+      <div class="user-ava" id="adminInitial">A</div>
+      <div class="user-info-box">
+        <div class="user-info-name" id="adminName">Admin User</div>
+        <div class="user-info-role" id="adminLevel">Loading...</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="page-transition" id="pageTransition"><div class="spinner-large"></div></div>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="mobile-menu-btn" onclick="toggleMenu()"><svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+      <div class="header-logo-container">
+        <img src="https://res.cloudinary.com/dlmnmuizk/image/upload/v1778322150/0f9ccf86-1759-49df-95ce-193834ff5090_gbvb9u.png" alt="QuickGov Logo">
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="page-header">
+      <div>
+        <h1>Admin Dashboard</h1>
+        <p id="scopeDisplay">Loading administrative scope...</p>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon icon-blue">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </div>
+        <div class="stat-info">
+          <h3>Total Residents</h3>
+          <div class="val" id="statResidents">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon icon-yellow">
+          <svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+        </div>
+        <div class="stat-info">
+          <h3>Pending Requests</h3>
+          <div class="val" id="statPendingDocs">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon icon-green">
+          <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        </div>
+        <div class="stat-info">
+          <h3>Processed Docs</h3>
+          <div class="val" id="statDoneDocs">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon icon-red">
+          <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 1-4-4V5a2 2 0 0 1 4 0v14a4 4 0 0 1-2 2h-2"></path><path d="M8 7v10a2 2 0 0 0 4 0V7a2 2 0 0 0-4 0z"></path></svg>
+        </div>
+        <div class="stat-info">
+          <h3>Pending Approvals</h3>
+          <div class="val" id="statPendingUsers">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-grid">
+      
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Latest Document Requests</h3>
+          <a href="admin-requests.html" class="panel-link">View All →</a>
+        </div>
+        <div class="panel-body">
+          <div class="quick-list" id="recentRequestsList">
+            <div style="text-align: center; color: var(--muted); font-size: 12px; padding: 20px;">Fetching recent requests...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Accounts to Approve</h3>
+          <a href="residentlist.html" class="panel-link">View All →</a>
+        </div>
+        <div class="panel-body">
+          <div class="quick-list" id="pendingUsersList">
+            <div style="text-align: center; color: var(--muted); font-size: 12px; padding: 20px;">Fetching accounts...</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function toggleMenu() {
+    document.getElementById('sidebar').classList.toggle('expanded');
+    document.getElementById('mobileOverlay').classList.toggle('active');
+  }
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+  import { getDatabase, ref, onValue, get, child } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+  const firebaseConfig = { apiKey: "AIzaSyB12w_rz613qgUI1G9N0JeHpkqs5FC1T-g", authDomain: "quickgov-ph.firebaseapp.com", databaseURL: "https://quickgov-ph-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "quickgov-ph", storageBucket: "quickgov-ph.firebasestorage.app", messagingSenderId: "370121513915", appId: "1:370121513915:web:a9cad3a4af0f18a063429e" };
+  
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+
+  let currentAdminData = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => { document.getElementById('pageTransition').classList.add('hidden'); }, 400);
+  });
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      try {
+        const snapshot = await get(child(ref(db), `admins/${user.uid}`));
+        if (snapshot.exists()) {
+          currentAdminData = snapshot.val();
+          
+          // Setup UI Header Profile
+          const fName = currentAdminData.fullName || "Admin";
+          document.getElementById('adminName').innerText = fName;
+          document.getElementById('adminInitial').innerText = fName[0].toUpperCase();
+          document.getElementById('adminLevel').innerText = currentAdminData.adminLevel === 'municipal' ? 'City Hall Admin' : 'Brgy Admin';
+          
+          const scope = currentAdminData.adminLevel === 'municipal' 
+            ? `Municipality of ${currentAdminData.municipality}, ${currentAdminData.province}`
+            : `Barangay ${currentAdminData.barangay}, ${currentAdminData.municipality}`;
+          document.getElementById('scopeDisplay').innerText = `Jurisdiction: ${scope}`;
+
+          // Load Data based on Scope
+          loadDashboardData();
+
+        } else {
+          // Not an admin, kick them out
+          await signOut(auth);
+          window.location.href = "admin-login.html";
+        }
+      } catch(e) {
+        console.error(e);
+      }
+    } else {
+      window.location.href = "admin-login.html";
+    }
+  });
+
+  function loadDashboardData() {
+    // 1. Fetch Users
+    onValue(ref(db, 'users'), (snapshot) => {
+      let totalRes = 0;
+      let pendingAccs = 0;
+      let pendingUsersHTML = '';
+      
+      if (snapshot.exists()) {
+        const users = [];
+        snapshot.forEach(child => { users.push({id: child.key, ...child.val()}); });
+        
+        // Filter users based on Admin Jurisdiction
+        const filteredUsers = users.filter(u => {
+           if(currentAdminData.adminLevel === 'municipal') {
+             return u.municipality === currentAdminData.municipality;
+           } else {
+             return u.barangay === currentAdminData.barangay && u.municipality === currentAdminData.municipality;
+           }
+        });
+
+        totalRes = filteredUsers.filter(u => u.status === 'approved').length;
+        
+        const pendingList = filteredUsers.filter(u => u.status !== 'approved').sort((a,b) => b.createdAt - a.createdAt);
+        pendingAccs = pendingList.length;
+
+        // Render top 3 pending users
+        pendingList.slice(0, 3).forEach(u => {
+          const name = u.fullName || "Unknown";
+          pendingUsersHTML += `
+            <div class="list-item">
+              <div class="item-left">
+                <div class="item-ava" style="background:#eafaf1; color:var(--accent-dark);">${name[0].toUpperCase()}</div>
+                <div class="item-info">
+                  <h4>${name}</h4>
+                  <p>${u.barangay}</p>
+                </div>
+              </div>
+              <span class="item-badge badge-pending">PENDING</span>
+            </div>
+          `;
+        });
+      }
+      
+      document.getElementById('statResidents').innerText = totalRes;
+      document.getElementById('statPendingUsers').innerText = pendingAccs;
+      
+      if(pendingUsersHTML === '') pendingUsersHTML = '<div style="text-align: center; color: var(--muted); font-size: 12px; padding: 10px;">All accounts approved.</div>';
+      document.getElementById('pendingUsersList').innerHTML = pendingUsersHTML;
+    });
+
+    // 2. Fetch Requests
+    onValue(ref(db, 'requests'), (snapshot) => {
+      let pendingDocs = 0;
+      let doneDocs = 0;
+      let recentDocsHTML = '';
+
+      if (snapshot.exists()) {
+        const reqs = [];
+        snapshot.forEach(child => { reqs.push({id: child.key, ...child.val()}); });
+        
+        // Note: Real implementation would join requests with user table to filter by jurisdiction.
+        // For this frontend demo, we will process all requests globally or assume they are filtered by backend rules.
+        
+        const pendingList = reqs.filter(r => r.status.toLowerCase() === 'pending' || r.status.toLowerCase().includes('process'));
+        pendingDocs = pendingList.length;
+        doneDocs = reqs.filter(r => r.status.toLowerCase().includes('ready') || r.status.toLowerCase().includes('complet')).length;
+
+        const sortedPending = pendingList.sort((a,b) => b.createdAt - a.createdAt);
+        
+        // Render top 4 recent requests
+        sortedPending.slice(0, 4).forEach(r => {
+          const name = r.userName || "U";
+          recentDocsHTML += `
+            <div class="list-item">
+              <div class="item-left">
+                <div class="item-ava" style="background:#fff4e6; color:#ff8c42;">
+                  <svg class="icon" style="width:16px;height:16px;" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                </div>
+                <div class="item-info">
+                  <h4>${r.docType}</h4>
+                  <p>Req by: ${name}</p>
+                </div>
+              </div>
+              <span class="item-badge badge-pending">REVIEW</span>
+            </div>
+          `;
+        });
+      }
+
+      document.getElementById('statPendingDocs').innerText = pendingDocs;
+      document.getElementById('statDoneDocs').innerText = doneDocs;
+
+      if(recentDocsHTML === '') recentDocsHTML = '<div style="text-align: center; color: var(--muted); font-size: 12px; padding: 10px;">No pending requests.</div>';
+      document.getElementById('recentRequestsList').innerHTML = recentDocsHTML;
+    });
+  }
+
+  window.logoutAdmin = async function() {
+    if(confirm("Sign out of Admin Portal?")) {
+      document.getElementById('pageTransition').classList.remove('hidden');
+      await signOut(auth);
+      window.location.href = "admin-login.html";
+    }
+  };
+</script>
+</body>
+</html>
