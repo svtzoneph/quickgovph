@@ -12,67 +12,73 @@
     --text: #0d2b27; --muted: #6b9e98; --border: #d0ede9; --shadow: 0 4px 20px rgba(13,79,71,0.05);
   }
   
+  /* BASE RESET */
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); display: flex; overflow-x: hidden; min-height: 100vh; }
   svg.icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  a { text-decoration: none; color: inherit; }
+  a { text-decoration: none !important; color: inherit; }
 
-  /* LOADING SCREEN */
+  /* LOADING SCREEN (EKSAKTO SA REQUEST.HTML) */
   .page-transition {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: var(--bg); z-index: 900;
-    display: flex; align-items: center; justify-content: center;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg); z-index: 999999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
     transition: opacity 0.3s ease; opacity: 1; pointer-events: auto;
   }
   .page-transition.hidden { opacity: 0; pointer-events: none; }
-  .spinner-large { width: 40px; height: 40px; border: 4px solid rgba(15,191,168,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  .spinner-large { width: 40px; height: 40px; border: 4px solid rgba(15,191,168,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 20px;}
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .mobile-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 43, 39, 0.5); backdrop-filter: blur(3px); z-index: 90; opacity: 0; visibility: hidden; transition: 0.3s ease; }
+  /* MOBILE OVERLAY WITH BLUR (EKSAKTO SA REQUEST.HTML) */
+  .mobile-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 43, 39, 0.5); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 99998; opacity: 0; visibility: hidden; transition: 0.3s ease; }
   .mobile-overlay.active { opacity: 1; visibility: visible; }
+  @media (min-width: 769px) { .mobile-overlay { display: none !important; } }
 
-  /* SIDEBAR */
-  .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 80px; background: var(--sidebar); z-index: 1000; transition: width 0.3s ease; display: flex; flex-direction: column; align-items: center; padding: 24px 0; }
+  /* SIDEBAR (EKSAKTO SA REQUEST.HTML) */
+  .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 80px; background: var(--sidebar); z-index: 99999; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s ease; display: flex; flex-direction: column; align-items: center; padding: 24px 0; border-right: 1px solid rgba(255,255,255,0.05);}
   .sidebar.expanded { width: 240px; }
   .sidebar-toggle { position: absolute; right: -14px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; background: var(--accent); border: 2px solid var(--bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; z-index: 101; transition: transform 0.3s; box-shadow: 0 2px 8px rgba(15,191,168,0.4); }
   .sidebar.expanded .sidebar-toggle { transform: translateY(-50%) rotate(180deg); }
 
-  .sb-logo { width: 100%; height: 44px; display: flex; align-items: center; justify-content: center; margin-bottom: 30px; color: #fff; font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 800; letter-spacing: 2px; transition: all 0.3s; }
+  .sb-logo { width: 100%; height: 44px; display: flex; align-items: center; justify-content: center; margin-bottom: 30px; color: #fff; font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 800; letter-spacing: 2px; transition: all 0.3s; flex-shrink: 0;}
   .sidebar.expanded .sb-logo { font-size: 20px; letter-spacing: 4px; }
-  .sb-menu { width: 100%; padding: 0 12px; display: flex; flex-direction: column; gap: 8px; }
+  .sb-menu { width: 100%; padding: 0 12px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; overflow-x: hidden; }
+  .sb-menu::-webkit-scrollbar { display: none; }
   
-  .sb-link { display: flex; align-items: center; gap: 14px; padding: 10px; border-radius: 12px; color: rgba(255,255,255,0.6); cursor: pointer; transition: all 0.2s; text-decoration: none; overflow: hidden; white-space: nowrap; }
+  .sb-link { display: flex; align-items: center; gap: 14px; padding: 10px; border-radius: 12px; color: rgba(255,255,255,0.6); cursor: pointer; transition: all 0.2s; overflow: hidden; white-space: nowrap; }
   .sb-link:hover { background: rgba(255,255,255,0.08); color: #fff; }
-  .sb-link.active { background: var(--sidebar-active); color: #fff; }
+  .sb-link.active { background: var(--sidebar-active); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
   .sb-icon-wrap { width: 36px; height: 36px; background: rgba(255,255,255,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .sb-link.active .sb-icon-wrap { background: var(--accent); }
   .sb-text { font-size: 14px; font-weight: 500; }
+  .sidebar:not(.expanded) .sb-text { display: none; }
   
   .sidebar-bottom { margin-top: auto; width: 100%; padding: 0 12px; }
-  .user-pill { display: flex; align-items: center; gap: 12px; padding: 10px 8px; border-radius: 12px; background: rgba(255,255,255,0.06); cursor: pointer; overflow: hidden; white-space: nowrap; transition: 0.2s; }
-  .user-pill:hover { background: rgba(255,107,107,0.15); }
+  .user-pill { display: flex; align-items: center; gap: 12px; padding: 10px 8px; border-radius: 12px; background: rgba(255,255,255,0.06); cursor: pointer; overflow: hidden; white-space: nowrap; transition: 0.2s; border: 1px solid transparent;}
+  .user-pill:hover { background: rgba(255,107,107,0.15); border-color: rgba(255,107,107,0.2);}
   .user-ava { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--amber), var(--coral)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #fff; flex-shrink: 0; position: relative; overflow: hidden; }
   .user-ava img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; display: none; }
+  .sidebar:not(.expanded) .user-info-box { display: none; }
   .user-info-box { overflow: hidden; display: flex; flex-direction: column; }
   .user-info-name { font-size: 13px; font-weight: 700; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
   .user-info-role { font-size: 10px; color: rgba(255,255,255,0.5); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
 
   /* MAIN AREA */
-  .main { position: relative; margin-left: 80px; width: calc(100% - 80px); min-height: 100vh; display: flex; flex-direction: column; transition: margin-left 0.3s, width 0.3s; }
+  .main { position: relative; margin-left: 80px; width: calc(100% - 80px); min-height: 100vh; display: flex; flex-direction: column; transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1;}
   .sidebar.expanded ~ .main { margin-left: 240px; width: calc(100% - 240px); }
 
-  /* TOPBAR */
+  /* TOPBAR & LOGO ALIGNMENT (EKSAKTO SA REQUEST.HTML) */
   .topbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 12px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 80; }
-  .topbar-left { display: flex; align-items: center; }
-  .mobile-menu-btn { display: none; width: 40px; height: 40px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; align-items: center; justify-content: center; cursor: pointer; color: var(--text); margin-right: 12px; }
+  .topbar-left { display: flex; align-items: center; gap: 16px; }
+  .mobile-menu-btn { display: none; background: transparent; border: none; align-items: center; justify-content: center; cursor: pointer; color: var(--text); padding: 4px; }
   .header-logo-container { height: 44px; display: flex; align-items: center; overflow: visible;}
-  .header-logo-container img { height: 100%; width: auto; max-width: 250px; object-fit: contain; }
+  .header-logo-container img { height: 100%; width: auto; max-width: 250px; object-fit: contain; transform: translateY(2px);}
+  
   .topbar-right { display: flex; align-items: center; gap: 12px; }
-  .header-icon-btn { width: 44px; height: 44px; border-radius: 12px; background: #eafaf1; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; color: var(--sidebar); }
-  .header-icon-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 
   /* SETTINGS LAYOUT */
-  .content { padding: 32px; display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start; max-width: 1100px; margin: 0 auto; width: 100%;}
+  .content { padding: 32px; display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start; max-width: 1100px; margin: 0 auto; width: 100%; animation: fadeUp 0.6s ease forwards;}
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   
   .settings-nav { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 8px;}
   .nav-item { padding: 14px 16px; border-radius: 12px; cursor: pointer; transition: 0.2s; font-weight: 700; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 12px;}
@@ -81,7 +87,6 @@
   
   .settings-panel { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 32px; box-shadow: var(--shadow); display: none; }
   .settings-panel.active { display: block; animation: fadeIn 0.3s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
   .panel-header { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
   .panel-header h2 { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
@@ -128,13 +133,17 @@
   .faq-q { font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
   .faq-a { font-size: 12px; color: var(--muted); line-height: 1.5; }
 
+  /* RESPONSIVE (EKSAKTO MULA SA REQUEST.HTML) */
   @media (max-width: 768px) {
-    .sidebar { left: -260px; width: 260px; padding-top: 20px; }
+    .sidebar { left: -260px; width: 260px; padding-top: 20px; border-right: none;}
     .sidebar.expanded { left: 0; }
     .sidebar-toggle { display: none !important; }
     .main, .sidebar.expanded ~ .main { margin-left: 0; width: 100%; }
     .mobile-menu-btn { display: flex; }
-    .header-logo-container img { max-width: 180px; }
+    
+    .topbar { padding: 12px 20px; }
+    .header-logo-container img { height: 32px; transform: translateY(1px); }
+    
     .content { padding: 20px; grid-template-columns: 1fr; }
     .settings-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 16px; }
     .nav-item { padding: 10px; font-size: 11px; justify-content: center; text-align: center; flex-direction: column; gap: 6px;}
@@ -150,23 +159,35 @@
   <div class="sidebar-toggle" onclick="toggleMenu()"><svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
   <div class="sb-logo">MENU</div>
   <div class="sb-menu">
-    <a onclick="navigateTo('dashboard.html')" class="sb-link">
+    <a href="dashboard.html" class="sb-link">
       <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div>
       <span class="sb-text">Dashboard</span>
     </a>
-    <a onclick="navigateTo('request.html')" class="sb-link">
+    <a href="request.html" class="sb-link">
       <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
       <span class="sb-text">Request Docs</span>
     </a>
-    <a onclick="navigateTo('myrequest.html')" class="sb-link">
+    <a href="myrequest.html" class="sb-link">
       <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></div>
       <span class="sb-text">My Requests</span>
     </a>
-    <a onclick="navigateTo('residency.html')" class="sb-link">
+    <a href="residency.html" class="sb-link">
       <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg></div>
       <span class="sb-text">Residency Map</span>
     </a>
-    <a href="#" class="sb-link active" style="margin-top: auto;">
+    <a href="hotlines.html" class="sb-link">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></div>
+      <span class="sb-text">Hotlines</span>
+    </a>
+    <a href="#" class="sb-link" style="margin-top: 10px;">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+      <span class="sb-text">Residents</span>
+    </a>
+    <a href="#" class="sb-link">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></div>
+      <span class="sb-text">Reports</span>
+    </a>
+    <a href="settings.html" class="sb-link active" style="margin-top: auto;">
       <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></div>
       <span class="sb-text">Settings</span>
     </a>
@@ -186,19 +207,23 @@
 </nav>
 
 <div class="main">
-  <div class="page-transition" id="pageTransition"><div class="spinner-large"></div></div>
+  <!-- LOADING SCREEN -->
+  <div class="page-transition" id="pageTransition">
+    <div class="spinner-large"></div>
+  </div>
 
+  <!-- TOPBAR (EKSAKTO SA REQUEST.HTML, WALANG EXTRA ICONS SA KANAN) -->
   <div class="topbar">
     <div class="topbar-left">
-      <button class="mobile-menu-btn" onclick="toggleMenu()"><svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+      <button class="mobile-menu-btn" onclick="toggleMenu()">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
       <div class="header-logo-container">
         <img src="https://res.cloudinary.com/dlmnmuizk/image/upload/v1778322150/0f9ccf86-1759-49df-95ce-193834ff5090_gbvb9u.png" alt="QuickGov Logo">
       </div>
     </div>
-    <div class="topbar-right">
-      <div class="header-icon-btn"><svg class="icon" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></div>
-      <div class="header-icon-btn"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
-    </div>
+    <!-- Tinanggal ang notification at info button dito -->
+    <div class="topbar-right"></div>
   </div>
 
   <div class="content">
@@ -344,15 +369,27 @@
         
         <div class="faq-item">
           <div class="faq-q">How long does a Barangay Clearance take?</div>
-          <div class="faq-a">Depending on your local barangay, processing usually takes 1 to 2 working days. You will see the status change to "Ready for Pickup" in your 'My Requests' tab.</div>
+          <div class="faq-a">Depending on your local barangay, processing usually takes 1 to 2 working days. You will see the status change to "Ready for Pickup" in your 'My Requests' tab. Ensure your ID documents are clear and valid to avoid delays.</div>
         </div>
         <div class="faq-item">
           <div class="faq-q">What Valid IDs are accepted?</div>
-          <div class="faq-a">We accept primary government-issued IDs such as National ID (Philsys), Passport, Driver's License, UMID, Voter's ID, and Postal ID.</div>
+          <div class="faq-a">We accept primary government-issued IDs such as National ID (Philsys), Passport, Driver's License, UMID, Voter's ID, and Postal ID. Secondary IDs like Company ID or School ID might require supplementary documents.</div>
         </div>
         <div class="faq-item">
           <div class="faq-q">How does the SOS feature work?</div>
-          <div class="faq-a">When you trigger the SOS in the Residency Map, your exact GPS coordinates and profile information are instantly broadcasted to the Admin Dashboard of your local LGU for immediate response.</div>
+          <div class="faq-a">When you trigger the SOS in the Residency Map, your exact GPS coordinates and profile information are instantly broadcasted to the Admin Dashboard of your local LGU for immediate response. A siren alert will trigger on the local command center.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">How can I track my document request?</div>
+          <div class="faq-a">You can track the real-time status of your documents under the 'My Requests' tab. The tracker updates from "Pending" to "On Process" and finally "Ready for Pickup". You can tap "Confirm Receipt" once you obtain your physical copy.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">Is my personal information secure?</div>
+          <div class="faq-a">Yes, we comply strictly with the Data Privacy Act of 2012. All submitted data is encrypted, and only authorized Local Government Unit (LGU) personnel have access to your submitted identity documents.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">What should I do if my address is not supported?</div>
+          <div class="faq-a">Currently, QuickGov PH is rolling out per municipality. If your area is out of coverage, please contact your local barangay captain or mayor's office to encourage them to join and integrate with the platform.</div>
         </div>
       </div>
 
@@ -362,15 +399,21 @@
           <p>How we handle your data.</p>
         </div>
         <h3>Data Collection</h3>
-        <p>QuickGov PH collects your personal information (name, email, address, and uploaded valid IDs) solely for the purpose of verifying your identity and processing local government requests (e.g., Barangay Clearances, Indigency Certificates).</p>
-        <h3>Data Protection</h3>
+        <p>QuickGov PH collects your personal information (name, email, address, and uploaded valid IDs) solely for the purpose of verifying your identity and processing local government requests (e.g., Barangay Clearances, Indigency Certificates). We also collect precise GPS location data exclusively when you interact with the Residency Map or trigger an Emergency SOS.</p>
+        
+        <h3>Data Protection & Security</h3>
         <ul>
-          <li>All uploaded documents are securely processed and are only visible to authorized LGU personnel.</li>
-          <li>We do not sell, share, or rent your personal information to third-party entities.</li>
-          <li>Data transmission is encrypted using industry-standard protocols.</li>
+          <li>All uploaded documents are securely processed in encrypted cloud servers and are only visible to authorized LGU personnel.</li>
+          <li>We do not sell, share, or rent your personal information to third-party marketing entities.</li>
+          <li>Data transmission is encrypted using industry-standard Secure Socket Layer (SSL) protocols.</li>
+          <li>Access to the administrative dashboard requires multi-factor authentication for government employees.</li>
         </ul>
+
+        <h3>Data Retention</h3>
+        <p>Your data is kept only as long as necessary to fulfill your requests or as required by Philippine law. Once a document request is completed, attached identification files are securely archived or purged according to the strict data retention policy of your specific Local Government Unit.</p>
+
         <h3>Your Rights</h3>
-        <p>Under the Data Privacy Act of 2012, you have the right to access, correct, or request deletion of your data from our systems. Contact your local barangay admin for assistance.</p>
+        <p>Under the Data Privacy Act of 2012 (R.A. 10173), you have the right to access, correct, or request deletion of your data from our systems. You can also opt-out of non-essential notifications via the Notifications tab. For deeper data concerns, please contact your local barangay admin or our Data Protection Officer.</p>
       </div>
 
       <div class="settings-panel static-content" id="panel-terms">
@@ -379,15 +422,21 @@
           <p>Guidelines for using the QuickGov PH Portal.</p>
         </div>
         <h3>Account Responsibilities</h3>
-        <p>You are responsible for maintaining the confidentiality of your account credentials. Any documents requested or SOS alerts triggered under your account are presumed to be authorized by you.</p>
+        <p>You are responsible for maintaining the confidentiality of your account credentials. Any documents requested or SOS alerts triggered under your account are presumed to be authorized by you. You must provide accurate, truthful, and up-to-date information during registration and document requests.</p>
+        
         <h3>Prohibited Activities</h3>
         <ul>
-          <li>Submitting fake, forged, or altered identification documents.</li>
-          <li>Triggering false Emergency SOS alerts (subject to local penalties).</li>
-          <li>Using the platform for any illegal activities or unauthorized commercial purposes.</li>
+          <li>Submitting fake, forged, or altered identification documents to deceive local authorities.</li>
+          <li>Triggering false or prank Emergency SOS alerts (subject to severe local penalties and legal action).</li>
+          <li>Attempting to hack, overload, reverse-engineer, or disrupt the QuickGov PH servers and databases.</li>
+          <li>Using the platform for any illegal activities, harassment, or unauthorized commercial purposes.</li>
         </ul>
+
+        <h3>Service Availability</h3>
+        <p>We strive for 24/7 platform availability to ensure you always have access to local services. However, scheduled maintenance, system upgrades, and localized network outages may occur. The Emergency SOS feature relies heavily on your active internet or mobile data connection; always keep traditional national hotlines (911, 117) in mind as reliable backups.</p>
+
         <h3>Limitation of Liability</h3>
-        <p>While QuickGov PH ensures maximum uptime, we are not liable for delays in emergency response or document processing caused by local government operational constraints or internet service interruptions.</p>
+        <p>While QuickGov PH provides the digital infrastructure to connect you with your government, we are not liable for delays in emergency response, document processing rejections, or operational constraints caused directly by your Local Government Unit or sudden internet service interruptions.</p>
       </div>
 
       <div class="settings-panel static-content" id="panel-about">
@@ -396,14 +445,22 @@
           <p>Digitalizing Local Governance.</p>
         </div>
         <h3>Our Mission</h3>
-        <p>QuickGov PH was built to bridge the gap between citizens and their local government units. By providing a centralized digital portal, we aim to streamline document requests, enhance emergency response, and foster a transparent community.</p>
-        <h3>Features</h3>
+        <p>QuickGov PH was built to bridge the gap between citizens and their local government units. By providing a centralized digital portal, we aim to streamline document requests, enhance emergency response, and foster a transparent, connected community.</p>
+        
+        <h3>Our Vision</h3>
+        <p>To create a unified, digital-first Philippines where vital local government services are easily accessible to every citizen, anytime, anywhere, eliminating long lines and bureaucratic delays.</p>
+
+        <h3>Key Features</h3>
         <ul>
-          <li><strong>Document Requests:</strong> Fast and paperless transactions.</li>
-          <li><strong>Residency Map:</strong> Intelligent geographic mapping of facilities and hazards.</li>
-          <li><strong>Emergency SOS:</strong> Direct lifeline to your local authorities.</li>
+          <li><strong>Document Requests:</strong> Fast, paperless transactions for clearances, permits, and certificates.</li>
+          <li><strong>Residency Map:</strong> Intelligent geographic mapping of local facilities, weather, and hazard zones.</li>
+          <li><strong>Emergency SOS:</strong> Direct lifeline broadcasting your exact location to your local authorities.</li>
+          <li><strong>Real-time Tracking:</strong> Transparent status updates for all your governmental requests.</li>
         </ul>
-        <p>Version 1.1.0 | Built for the Philippines.</p>
+
+        <h3>Commitment to Excellence</h3>
+        <p>Built with the Filipino citizen in mind, QuickGov PH continuously evolves. We partner directly with Mayors, Barangay Captains, and MDRRMOs to ensure that the transition from manual to digital governance is seamless, transparent, and highly efficient.</p>
+        <p style="margin-top:20px; font-weight:700; color:var(--accent-dark);">Version 1.2.5 | Proudly Built for the Philippines.</p>
       </div>
 
       <div class="settings-panel static-content" id="panel-contact">
@@ -411,14 +468,14 @@
           <h2>Contact Us</h2>
           <p>Reach out to your local authorities.</p>
         </div>
-        <p>If you have issues regarding your document requests or account approval, please reach out directly to your assigned Barangay Administrator or City Hall.</p>
+        <p>If you have issues regarding your document requests, account approval, or incorrect addresses, please reach out directly to your assigned Barangay Administrator or City Hall Helpdesk.</p>
         
         <div style="background: rgba(15,191,168,0.05); border: 1px solid var(--border); padding: 20px; border-radius: 16px; margin-top: 20px;">
           <h4 style="font-size: 14px; font-weight: 800; color: var(--accent-dark); margin-bottom: 12px;">Local Hotlines (General)</h4>
           <ul>
             <li><strong>National Emergency:</strong> 911</li>
             <li><strong>PNP / Police:</strong> 117</li>
-            <li><strong>Fire Department:</strong> (Refer to local directory)</li>
+            <li><strong>NDRRMC:</strong> (02) 8911-5061</li>
             <li><strong>Technical Support:</strong> support@quickgov.ph</li>
           </ul>
         </div>
