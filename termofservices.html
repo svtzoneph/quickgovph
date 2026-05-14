@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>QuickGov PH – Terms of Service</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0faf8; --sidebar: #0d4f47; --sidebar-active: #17756b; --card: #ffffff;
+    --accent: #0fbfa8; --accent-dark: #0d8c7d; --coral: #ff6b6b; --amber: #ffb84d;
+    --text: #0d2b27; --muted: #6b9e98; --border: #d0ede9; --shadow: 0 4px 20px rgba(13,79,71,0.05);
+  }
+  
+  /* BASE RESET */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; min-height: 100vh; }
+  
+  /* LOADING SCREEN */
+  .page-transition {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg); z-index: 999999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 0.3s ease; opacity: 1; pointer-events: auto;
+  }
+  .page-transition.hidden { opacity: 0; pointer-events: none; }
+  .spinner-large { width: 40px; height: 40px; border: 4px solid rgba(15,191,168,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 20px;}
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* TOPBAR & LOGO */
+  .topbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 12px 32px; display: flex; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 80; flex-shrink: 0;}
+  .header-logo-container { height: 44px; display: flex; align-items: center; overflow: visible;}
+  .header-logo-container img { height: 100%; width: auto; max-width: 250px; object-fit: contain; transform: translateY(2px);}
+
+  /* MAIN CONTENT LAYOUT */
+  .main { flex: 1; display: flex; flex-direction: column; width: 100%; z-index: 1;}
+
+  .content { 
+    padding: 40px 20px; 
+    max-width: 800px; 
+    margin: 0 auto; 
+    width: 100%; 
+    animation: fadeUp 0.6s ease forwards;
+  }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  .settings-panel { 
+    background: var(--card); 
+    border: 1px solid var(--border); 
+    border-radius: 20px; 
+    padding: 40px; 
+    box-shadow: var(--shadow); 
+  }
+
+  .panel-header { margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+  .panel-header h2 { font-size: 24px; font-weight: 800; color: var(--text); margin-bottom: 8px; letter-spacing: -0.5px;}
+  .panel-header p { font-size: 14px; color: var(--muted); font-weight: 500; }
+
+  /* STATIC TEXT STYLES */
+  .static-content h3 { font-size: 17px; font-weight: 800; margin: 32px 0 12px; color: var(--accent-dark); }
+  .static-content p { font-size: 14px; color: var(--text); line-height: 1.7; margin-bottom: 16px; font-weight: 500;}
+  .static-content ul { padding-left: 24px; margin-bottom: 20px; font-size: 14px; color: var(--text); line-height: 1.7; font-weight: 500;}
+  .static-content li { margin-bottom: 10px; }
+
+  /* MOBILE RESPONSIVE */
+  @media (max-width: 768px) {
+    .topbar { padding: 12px 20px; justify-content: center;}
+    .header-logo-container img { height: 32px; transform: translateY(1px); }
+    
+    .content { padding: 20px; }
+    .settings-panel { padding: 24px; }
+    .panel-header h2 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="main">
+  <!-- LOADING SCREEN -->
+  <div class="page-transition" id="pageTransition">
+    <div class="spinner-large"></div>
+  </div>
+
+  <!-- TOPBAR (LOGO ONLY) -->
+  <div class="topbar">
+    <div class="header-logo-container">
+      <img src="https://res.cloudinary.com/dlmnmuizk/image/upload/v1778322150/0f9ccf86-1759-49df-95ce-193834ff5090_gbvb9u.png" alt="QuickGov Logo">
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="settings-panel static-content">
+      <div class="panel-header">
+        <h2>Terms of Service</h2>
+        <p>Guidelines for using the QuickGov PH Portal.</p>
+      </div>
+      
+      <h3>Account Responsibilities</h3>
+      <p>You are responsible for maintaining the confidentiality of your account credentials. Any documents requested or SOS alerts triggered under your account are presumed to be authorized by you. You must provide accurate, truthful, and up-to-date information during registration and document requests.</p>
+      
+      <h3>Prohibited Activities</h3>
+      <ul>
+        <li>Submitting fake, forged, or altered identification documents to deceive local authorities.</li>
+        <li>Triggering false or prank Emergency SOS alerts (subject to severe local penalties and legal action).</li>
+        <li>Attempting to hack, overload, reverse-engineer, or disrupt the QuickGov PH servers and databases.</li>
+        <li>Using the platform for any illegal activities, harassment, or unauthorized commercial purposes.</li>
+      </ul>
+
+      <h3>Service Availability</h3>
+      <p>We strive for 24/7 platform availability to ensure you always have access to local services. However, scheduled maintenance, system upgrades, and localized network outages may occur. The Emergency SOS feature relies heavily on your active internet or mobile data connection; always keep traditional national hotlines (911, 117) in mind as reliable backups.</p>
+
+      <h3>Limitation of Liability</h3>
+      <p>While QuickGov PH provides the digital infrastructure to connect you with your government, we are not liable for delays in emergency response, document processing rejections, or operational constraints caused directly by your Local Government Unit or sudden internet service interruptions.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(() => { document.getElementById('pageTransition').classList.add('hidden'); }, 300);
+  });
+</script>
+
+</body>
+</html>
