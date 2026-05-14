@@ -153,8 +153,9 @@
     align-items: center; justify-content: center; cursor: pointer; color: var(--text); padding: 4px;
   }
   
-  .header-logo-container { display: flex; align-items: center; height: 34px; }
-  .header-logo-container img { height: 100%; width: auto; object-fit: contain; }
+  /* PERFECT LOGO ALIGNMENT */
+  .header-logo-container { display: flex; align-items: center; justify-content: center; height: 100%; }
+  .header-logo-container img { height: 38px; width: auto; object-fit: contain; display: block; transform: translateY(2px); }
 
   .topbar-right { display: flex; align-items: center; gap: 12px; }
   .location-tag {
@@ -162,12 +163,6 @@
     color: var(--accent-dark); font-size: 12px; font-weight: 700;
     padding: 8px 14px; border-radius: 20px; border: 1px solid var(--border);
   }
-  .icon-btn {
-    width: 40px; height: 40px; border-radius: 10px; background: rgba(15,191,168,0.1);
-    border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: 0.2s; color: var(--accent-dark);
-  }
-  .icon-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 
   /* DASHBOARD SPECIFIC STYLES */
   .dashboard-wrapper { padding-bottom: 40px; }
@@ -223,8 +218,9 @@
     
     .mobile-menu-btn { display: flex; }
     .location-tag { display: none; }
-    .topbar { padding: 14px 20px; }
-    .header-logo-container { height: 26px; }
+    .topbar { padding: 12px 20px; }
+    
+    .header-logo-container img { height: 32px; transform: translateY(1px); }
     
     .welcome-banner { margin: 20px 20px 0; padding: 24px; }
     .stats-row { padding: 20px 20px 0; }
@@ -268,6 +264,14 @@
       <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg></div>
       <span class="sb-text">Residency Map</span>
     </a>
+    <a href="hotlines.html" class="sb-link active">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></div>
+      <span class="sb-text">Hotlines</span>
+    </a>
+    <a href="hotlines.html" class="sb-link">
+      <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></div>
+      <span class="sb-text">Hotlines</span>
+    </a>
     <a href="settings.html" class="sb-link" style="margin-top: auto;">
       <div class="sb-icon-wrap"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></div>
       <span class="sb-text">Settings</span>
@@ -305,8 +309,6 @@
         <svg class="icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
         Detecting Location...
       </div>
-      <div class="icon-btn"><svg class="icon" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></div>
-      <div class="icon-btn"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
     </div>
   </div>
 
@@ -403,7 +405,7 @@
     if(confirm("Are you sure you want to sign out?")) {
       document.getElementById('pageTransition').classList.remove('hidden');
       await signOut(auth);
-      window.location.href = "index.html";
+      window.location.href = "login.html";
     }
   };
 
@@ -462,7 +464,7 @@
           if (userData.status !== "approved") {
             alert("Your account is pending review or restricted. You cannot access the dashboard.");
             await signOut(auth);
-            window.location.href = "index.html";
+            window.location.href = "login.html";
             return;
           }
 
@@ -479,7 +481,6 @@
           document.getElementById('userAddressDisplay').textContent = userData.address || "✓ Verified Resident";
 
           // DYNAMIC LOCATION TAG & SESSION STORAGE
-          // This prepares the routing so request.html knows exactly where to send the document request
           if(userData.municipality && userData.province) {
             document.getElementById('userLocationTag').innerHTML = `
               <svg class="icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
