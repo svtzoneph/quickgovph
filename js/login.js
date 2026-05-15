@@ -31,7 +31,7 @@ onAuthStateChanged(auth, async (user) => {
       const snapshot = await get(child(ref(db), `users/${user.uid}`));
       if (snapshot.exists()) {
         if (snapshot.val().status === "approved") {
-          window.location.href = "dashboard.html"; // Success Auto-login
+          window.location.href = "dashboard"; // Success Auto-login
         } else {
           await signOut(auth);
           hideLoader();
