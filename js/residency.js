@@ -2,7 +2,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/fireba
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 import { getDatabase, ref, get, child, push, update } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-// --- FIREBASE SETUP ---
 const firebaseConfig = { 
   apiKey: "AIzaSyB12w_rz613qgUI1G9N0JeHpkqs5FC1T-g", 
   authDomain: "quickgov-ph.firebaseapp.com", 
@@ -17,7 +16,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-// --- GLOBAL UI FUNCTIONS ---
 window.navigateTo = function(url) {
   document.getElementById('pageTransition').classList.remove('hidden');
   setTimeout(() => { window.location.href = url; }, 350);
@@ -52,7 +50,6 @@ setInterval(() => {
   document.getElementById('localTime').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); 
 }, 1000);
 
-// --- MAP & LAYERS INITIALIZATION ---
 let map, userMarker, searchRadiusCircle, routingControl;
 let currentLat, currentLng;
 let currentAQI = null;
@@ -77,7 +74,6 @@ let mapMode = 0;
 
 const phBounds = [[4.5, 116.9], [21.3, 126.6]];
 
-// Dito mangyayari ang auto-location sa pag load ng DOM
 document.addEventListener("DOMContentLoaded", () => {
   initMap();
   setTimeout(() => {
@@ -111,14 +107,12 @@ function initMap() {
   map.addLayer(aqiLayer);
   map.addLayer(outageLayer);
 
-  // FIX: Dito inayos yung click problem
   map.on('click', function(e) { 
       document.getElementById('pageTransition').classList.remove('hidden');
       document.getElementById('loader-text').innerText = "Scanning New Location...";
-      processLocationData(e.latlng.lat, e.latlng.lng, true); // true param will center map
+      processLocationData(e.latlng.lat, e.latlng.lng, true);
   });
 
-  // FEATURE: Automatic getting location
   if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(
       position => {
@@ -135,7 +129,6 @@ function initMap() {
   }
 }
 
-// Global functions for map controls
 window.toggleMapType = function() {
   mapMode = (mapMode + 1) % 3;
   map.removeLayer(currentTileLayer);
@@ -193,7 +186,6 @@ async function processLocationData(lat, lng, centerMap = false) {
   document.getElementById('coordDisplay').innerText = `Lat: ${lat.toFixed(5)} | Lng: ${lng.toFixed(5)}`;
   document.getElementById('placesContainer').innerHTML = `<div class="skeleton" style="height: 60px; width:100%; margin-bottom:10px;"></div><div class="skeleton" style="height: 60px; width:100%;"></div>`;
 
-  // 1. Reverse Geocode Location
   try {
     const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
     const data = await response.json();
@@ -217,14 +209,12 @@ async function processLocationData(lat, lng, centerMap = false) {
     }
   } catch (e) { document.getElementById('addressDisplay').innerText = "Address unavailable."; }
 
-  // 2. Fetch AQI
   try {
     const aqiRes = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lng}&current=us_aqi`);
     const aqiData = await aqiRes.json();
     currentAQI = aqiData.current.us_aqi;
   } catch(e) { currentAQI = null; }
 
-  // 3. Fetch Weather & Heat Index
   try {
     const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,apparent_temperature`);
     const wData = await wRes.json();
@@ -238,7 +228,6 @@ async function processLocationData(lat, lng, centerMap = false) {
   toggleAQI();
   toggleOutage();
 
-  // 4. Fetch Nearby Places via Overpass API
   await fetchFacilities(lat, lng);
   document.getElementById('pageTransition').classList.add('hidden');
 }
@@ -578,7 +567,7 @@ onAuthStateChanged(auth, async (user) => {
         const userData = snapshot.val();
         if (userData.status !== "approved") {
           await signOut(auth);
-          window.location.href = "index.html";
+          window.location.href = "index";
           return;
         }
         const fullName = userData.fullName || user.displayName || "User";
@@ -595,6 +584,6 @@ onAuthStateChanged(auth, async (user) => {
       }
     } catch (error) { console.error("Auth error:", error); }
   } else {
-    window.location.href = "index.html";
+    window.location.href = "index";
   }
 });
