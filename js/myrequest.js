@@ -42,7 +42,6 @@ window.switchTab = function(tabName) {
   renderRequests();
 };
 
-// MULTI-PATH UPDATE FOR CONFIRMING RECEIPT
 window.confirmReceipt = async function(reqId) {
   if(confirm("Have you successfully received your requested document?")) {
     try {
@@ -143,7 +142,6 @@ function renderRequests() {
   });
 }
 
-// LISTENING TO USER'S DIRECTORY REQUESTS
 function loadRequestsTracker(uid, province, municipality, barangay) {
   let requestsQuery;
   if (province && municipality && barangay) {
@@ -201,6 +199,6 @@ onAuthStateChanged(auth, async (user) => {
       }
     } catch (error) { console.error("Auth error:", error); }
   } else {
-    window.location.href = "index.html";
+    window.location.href = "index";
   }
 });
