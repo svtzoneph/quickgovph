@@ -5,134 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>QuickGov PH – Digital Local Governance</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #f4fcfb; 
-    --card: #ffffff;
-    --text: #061f1c; 
-    --text-muted: #5e8781;
-    --accent: #0fbfa8; 
-    --accent-dark: #0a8272; 
-    --coral: #ff6b6b; 
-    --amber: #f5a623;
-    --border: #dbece9; 
-    --shadow-soft: 0 20px 40px -10px rgba(15,191,168,0.1);
-    --shadow-strong: 0 30px 60px -15px rgba(6,31,28,0.1);
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
-  a { text-decoration: none; color: inherit; }
-  svg.icon { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
-  /* ANIMATIONS */
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-  .fade-up { animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-  .delay-1 { animation-delay: 0.1s; }
-  .delay-2 { animation-delay: 0.2s; }
-  .delay-3 { animation-delay: 0.3s; }
-  .delay-4 { animation-delay: 0.4s; }
-
-  /* NAVBAR (Classic Full Width) */
-  .navbar { position: fixed; top: 0; left: 0; width: 100%; padding: 16px 5%; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 1000; border-bottom: 1px solid var(--border); }
-  
-  /* FIXED LOGO ALIGNMENT */
-  .logo { display: flex; align-items: center; justify-content: center; height: 100%; }
-  .logo img { height: 38px; object-fit: contain; display: block; transform: translateY(2px); }
-  
-  .nav-buttons { display: flex; gap: 12px; align-items: center; }
-
-  /* BUTTONS */
-  .btn { padding: 12px 24px; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-  .btn-outline { background: transparent; color: var(--accent-dark); border: 1px solid var(--border); }
-  .btn-outline:hover { border-color: var(--accent); background: #eafaf1; }
-  .btn-primary { background: var(--accent); color: #fff; border: none; box-shadow: 0 4px 12px rgba(15,191,168,0.2); }
-  .btn-primary:hover { background: var(--accent-dark); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(15,191,168,0.3); }
-  .btn-large { padding: 16px 32px; font-size: 16px; }
-  .btn-dark { background: var(--text); color: #fff; }
-  .btn-dark:hover { background: #000; transform: translateY(-2px); }
-
-  /* HERO SECTION */
-  .hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 120px 5% 60px; position: relative; }
-  
-  /* Abstract Background Elements */
-  .bg-shape-1 { position: absolute; top: -10%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(15,191,168,0.12) 0%, rgba(255,255,255,0) 70%); z-index: -1; }
-  .bg-shape-2 { position: absolute; bottom: 10%; right: -5%; width: 40vw; height: 40vw; background: radial-gradient(circle, rgba(245,166,35,0.08) 0%, rgba(255,255,255,0) 70%); z-index: -1; }
-  
-  .badge { background: #eafaf1; color: var(--accent-dark); padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; border: 1px solid var(--border); display: inline-flex; align-items: center; gap: 8px;}
-  .badge::before { content: ''; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; display: block; }
-
-  .hero h1 { font-size: 52px; font-weight: 800; color: var(--text); line-height: 1.15; margin-bottom: 24px; max-width: 800px; letter-spacing: -1px; margin-left: auto; margin-right: auto;}
-  .hero h1 span { color: var(--accent); } 
-  .hero p { font-size: 18px; color: var(--text-muted); font-weight: 500; max-width: 650px; line-height: 1.6; margin: 0 auto 40px; }
-  .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 600px;}
-
-  /* BENTO GRID (Features Section) */
-  .features-section { padding: 80px 5% 100px; }
-  .bento-wrapper { max-width: 1200px; margin: 0 auto; }
-  
-  .section-title { text-align: center; margin-bottom: 50px; }
-  .section-title h2 { font-size: 36px; font-weight: 800; letter-spacing: -1px; margin-bottom: 12px;}
-  .section-title p { font-size: 16px; color: var(--text-muted); font-weight: 500; }
-  
-  .bento-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: minmax(260px, auto); gap: 24px; }
-  
-  .bento-card { background: var(--card); border-radius: 24px; padding: 32px; border: 1px solid var(--border); position: relative; overflow: hidden; transition: 0.3s; box-shadow: var(--shadow-soft); display: flex; flex-direction: column; text-align: left;}
-  .bento-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-strong); border-color: var(--accent);}
-  
-  /* Bento Specific Sizings */
-  .bento-large { grid-column: span 2; }
-  .bento-dark { background: var(--text); color: #fff; border: none; }
-  .bento-dark h3 { color: #fff !important; }
-  .bento-dark p { color: rgba(255,255,255,0.7) !important; }
-  .bento-dark .feature-icon { background: rgba(255,255,255,0.1); color: #fff;}
-
-  .feature-icon { width: 56px; height: 56px; border-radius: 16px; background: #eafaf1; color: var(--accent-dark); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
-  
-  .bento-card h3 { font-size: 20px; font-weight: 800; margin-bottom: 10px; color: var(--text); }
-  .bento-card p { font-size: 14px; color: var(--text-muted); line-height: 1.6; font-weight: 500; margin-bottom: auto;}
-
-  /* Floating UI Accents inside Bento */
-  .ui-accent { margin-top: 24px; background: rgba(255,255,255,0.8); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 10px;}
-  .ui-accent-dark { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;}
-  .ui-dot { width: 10px; height: 10px; border-radius: 50%; }
-  .ui-text { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;}
-
-  /* FOOTER */
-  footer { background: var(--text); padding: 50px 5%; color: #fff; }
-  .footer-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px;}
-  .footer-content img { height: 30px; filter: brightness(0) invert(1); }
-  .footer-links { display: flex; gap: 24px; font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.6);}
-  .footer-links a:hover { color: #fff; }
-
-  /* 📱 MOBILE RESPONSIVE (PHONE FRIENDLY) */
-  @media (max-width: 900px) {
-    .bento-grid { grid-template-columns: 1fr 1fr; }
-    .bento-large { grid-column: span 2; }
-  }
-  @media (max-width: 768px) {
-    .navbar { padding: 12px 20px; }
-    .logo img { height: 32px; transform: translateY(1px); }
-    .nav-buttons .btn-outline { display: none; } /* Hide secondary button on mobile navbar to save space */
-    
-    .hero { padding: 120px 5% 60px; }
-    .hero h1 { font-size: 36px; margin-bottom: 16px; }
-    .hero p { font-size: 15px; margin-bottom: 30px; }
-    
-    .hero-buttons { flex-direction: column; width: 100%; max-width: 320px; margin: 0 auto; }
-    .hero-buttons .btn { width: 100%; justify-content: center; }
-
-    .section-title h2 { font-size: 28px; }
-    .bento-grid { grid-template-columns: 1fr; }
-    .bento-large { grid-column: span 1; }
-    
-    .footer-content { flex-direction: column; text-align: center; }
-  }
-</style>
+<link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
 
-  <!-- NAVBAR -->
   <nav class="navbar">
     <div class="logo">
       <img src="https://res.cloudinary.com/dlmnmuizk/image/upload/v1778322150/0f9ccf86-1759-49df-95ce-193834ff5090_gbvb9u.png" alt="QuickGov Logo">
@@ -146,7 +22,6 @@
     </div>
   </nav>
 
-  <!-- HERO SECTION -->
   <header class="hero">
     <div class="bg-shape-1"></div>
     <div class="bg-shape-2"></div>
@@ -165,7 +40,33 @@
     </div>
   </header>
 
-  <!-- FEATURES BENTO GRID -->
+  <section class="steps-section">
+    <div class="bento-wrapper">
+      <div class="section-title fade-up">
+        <h2>As Easy As 1-2-3</h2>
+        <p>Get your documents processed in minutes, not hours.</p>
+      </div>
+      
+      <div class="steps-grid">
+        <div class="step-card fade-up delay-1">
+          <div class="step-number">01</div>
+          <h3>Create an Account</h3>
+          <p>Sign up and verify your residency through our secure portal to unlock all local services.</p>
+        </div>
+        <div class="step-card fade-up delay-2">
+          <div class="step-number">02</div>
+          <h3>Submit a Request</h3>
+          <p>Choose the document you need, fill out the digital form, and upload any required IDs.</p>
+        </div>
+        <div class="step-card fade-up delay-3">
+          <div class="step-number">03</div>
+          <h3>Track & Receive</h3>
+          <p>Monitor your request in real-time. We'll notify you the moment it is ready for pickup or download.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="features-section" id="features">
     <div class="bento-wrapper">
       <div class="section-title fade-up">
@@ -175,7 +76,6 @@
 
       <div class="bento-grid">
         
-        <!-- BENTO 1: Paperless (Large) -->
         <div class="bento-card bento-large fade-up delay-1">
           <div class="feature-icon">
             <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
@@ -189,7 +89,6 @@
           </div>
         </div>
 
-        <!-- BENTO 2: SOS & Hotlines (Dark) -->
         <div class="bento-card bento-dark fade-up delay-2">
           <div class="feature-icon" style="color: var(--coral);">
             <svg class="icon" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
@@ -203,7 +102,6 @@
           </div>
         </div>
 
-        <!-- BENTO 3: Residency Map -->
         <div class="bento-card fade-up delay-3">
           <div class="feature-icon" style="background: rgba(66,133,244,0.1); color: #4285f4;">
             <svg class="icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
@@ -212,7 +110,6 @@
           <p>Explore your neighborhood. Monitor real-time heat indexes, flood hazard maps, and navigate to the nearest hospitals and evacuation centers.</p>
         </div>
 
-        <!-- BENTO 4: Quick News -->
         <div class="bento-card fade-up delay-4">
           <div class="feature-icon" style="background: rgba(138,43,226,0.1); color: #8a2be2;">
             <svg class="icon" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
@@ -221,20 +118,30 @@
           <p>Stay informed with real-time updates, local announcements, and health advisories directly from your municipal and barangay officials.</p>
         </div>
 
-        <!-- BENTO 5: Verification -->
         <div class="bento-card fade-up delay-4">
           <div class="feature-icon" style="background: rgba(245,166,35,0.1); color: var(--amber);">
-            <svg class="icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           </div>
-          <h3>Secured Profiles</h3>
-          <p>Every resident is verified by their Barangay Admin to ensure a safe, legitimate digital community protecting your privacy.</p>
+          <h3>Track Your Requests</h3>
+          <p>Monitor the real-time status of your documents. Know exactly when your request is being processed, reviewed, and ready for pickup.</p>
         </div>
 
       </div>
     </div>
   </section>
 
-  <!-- FOOTER -->
+  <section class="cta-section fade-up">
+    <div class="cta-box">
+      <div class="cta-content">
+        <h2>Ready to experience faster local services?</h2>
+        <p>Join thousands of residents who have already upgraded to digital governance.</p>
+      </div>
+      <div class="cta-action">
+        <a href="register.html" class="btn btn-dark btn-large" style="width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">Create Free Account</a>
+      </div>
+    </div>
+  </section>
+
   <footer>
     <div class="footer-content">
       <img src="https://res.cloudinary.com/dlmnmuizk/image/upload/v1778322150/0f9ccf86-1759-49df-95ce-193834ff5090_gbvb9u.png" alt="Logo">
@@ -245,25 +152,10 @@
       </div>
     </div>
     <div style="text-align: center; margin-top: 40px; font-size: 12px; color: rgba(255,255,255,0.4); font-family: 'Space Mono', monospace;">
-        @ 2026 QUICKGOV PH. ALL RIGHTS RESERVED.
+        &copy; 2026 QUICKGOV PH. ALL RIGHTS RESERVED.
     </div>
   </footer>
 
-  <script>
-    // Reveal elements on scroll smoothly
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.style.animationPlayState = 'running';
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.1 });
-
-    document.querySelectorAll('.fade-up').forEach(el => {
-      el.style.animationPlayState = 'paused';
-      observer.observe(el);
-    });
-  </script>
+  <script src="./js/script.js"></script>
 </body>
 </html>
