@@ -4,176 +4,65 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>QuickGov PH – Resident Login</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #f0faf8; --card: #ffffff; --text: #0d2b27; --muted: #6b9e98;
-    --accent: #0fbfa8; --accent-dark: #0d8c7d; --border: #d0ede9; --shadow: 0 8px 32px rgba(13,79,71,0.08);
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow-x: hidden; padding: 20px;}
-  
-  .auth-container { background: var(--card); width: 100%; max-width: 420px; border-radius: 24px; box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; position: relative;}
-  
-  .auth-header { padding: 40px 32px 20px; text-align: center; border-bottom: 1px solid var(--border); background: #f8fdfb;}
-  .auth-header img { height: 44px; margin-bottom: 20px; object-fit: contain;}
-  .auth-header h1 { font-size: 22px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.5px;}
-  .auth-header p { font-size: 14px; color: var(--muted); font-weight: 500; }
-
-  .auth-body { padding: 32px; }
-
-  .field { margin-bottom: 20px; position: relative;}
-  .field label { display: block; font-size: 11px; font-weight: 800; color: var(--text); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;}
-  .field input { width: 100%; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); font-family: inherit; font-size: 14px; font-weight: 600; color: var(--text); outline: none; transition: 0.2s; }
-  .field input:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 4px rgba(15,191,168,0.1); }
-  
-  .forgot-link { position: absolute; right: 0; top: 0; font-size: 11px; font-weight: 700; color: var(--accent-dark); text-decoration: none; cursor: pointer; }
-  .forgot-link:hover { text-decoration: underline; }
-
-  .submit-btn { width: 100%; padding: 16px; border-radius: 14px; border: none; background: var(--accent); color: #fff; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer; transition: 0.2s; margin-top: 10px; box-shadow: 0 4px 12px rgba(15,191,168,0.2);}
-  .submit-btn:hover { background: var(--accent-dark); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(15,191,168,0.3); }
-  .submit-btn:disabled { background: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
-
-  .loader-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 10; display: none; align-items: center; justify-content: center; flex-direction: column; backdrop-filter: blur(4px);}
-  .spinner { width: 40px; height: 40px; border: 4px solid rgba(15,191,168,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px;}
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .bottom-links { text-align: center; margin-top: 24px; font-size: 13px; font-weight: 600; color: var(--muted); }
-  .bottom-links a { color: var(--accent-dark); font-weight: 800; text-decoration: none; transition: 0.2s; }
-  .bottom-links a:hover { text-decoration: underline; }
-  
-  .admin-link { display: block; text-align: center; margin-top: 20px; font-size: 12px; font-weight: 700; color: var(--muted); text-decoration: none; transition: 0.2s; padding-top: 20px; border-top: 1px dashed var(--border);}
-  .admin-link:hover { color: var(--text); }
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/login.css">
 </head>
 <body>
 
-<div class="auth-container">
-  <div class="loader-overlay" id="loader">
-    <div class="spinner"></div>
-    <div style="font-size: 13px; font-weight: 800; color: var(--accent-dark);" id="loader-text">Checking session...</div>
-  </div>
-
-  <div class="auth-header">
-    <img src="https://res.cloudinary.com/dlmnmuizk/image/upload/v1778322150/0f9ccf86-1759-49df-95ce-193834ff5090_gbvb9u.png" alt="QuickGov Logo">
-    <h1>Resident Login</h1>
-    <p>Sign in to access your local services</p>
-  </div>
-
-  <div class="auth-body">
-    <div class="field">
-      <label>Email Address</label>
-      <input type="email" id="logEmail" placeholder="Enter your email">
+  <nav class="navbar">
+    <div class="logo">
+      <img src="https://res.cloudinary.com/dlmnmuizk/image/upload/v1778322150/0f9ccf86-1759-49df-95ce-193834ff5090_gbvb9u.png" alt="QuickGov Logo">
     </div>
-    <div class="field">
-      <label>Password</label>
-      <a onclick="forgotPassword()" class="forgot-link">Forgot Password?</a>
-      <input type="password" id="logPass" placeholder="Enter your password">
+    <div class="nav-buttons">
+      <a href="index.html" class="btn btn-outline">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back to Home
+      </a>
     </div>
-    
-    <button class="submit-btn" onclick="loginResident()">Sign In Securely</button>
-    
-    <div class="bottom-links">
-      Don't have an account? <a href="register.html">Register here</a>
+  </nav>
+
+  <main class="login-wrapper">
+    <div class="auth-container">
+      <div class="loader-overlay" id="loader">
+        <div class="spinner"></div>
+        <div style="font-size: 13px; font-weight: 800; color: var(--accent-dark);" id="loader-text">Checking session...</div>
+      </div>
+
+      <div class="auth-header">
+        <img src="https://res.cloudinary.com/dlmnmuizk/image/upload/v1778322150/0f9ccf86-1759-49df-95ce-193834ff5090_gbvb9u.png" alt="QuickGov Logo">
+        <h1>Resident Login</h1>
+        <p>Sign in to access your local services</p>
+      </div>
+
+      <div class="auth-body">
+        <div class="field">
+          <label>Email Address</label>
+          <input type="email" id="logEmail" placeholder="Enter your email">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <a onclick="forgotPassword()" class="forgot-link">Forgot Password?</a>
+          <input type="password" id="logPass" placeholder="Enter your password">
+        </div>
+        
+        <button class="submit-btn" onclick="loginResident()">Sign In Securely</button>
+        
+        <div class="bottom-links">
+          Don't have an account? <a href="register.html">Register here</a>
+        </div>
+      </div>
     </div>
+  </main>
 
-    
-  </div>
-</div>
+  <footer>
+    <div class="footer-content">
+      <img src="https://res.cloudinary.com/dlmnmuizk/image/upload/v1778322150/0f9ccf86-1759-49df-95ce-193834ff5090_gbvb9u.png" alt="Logo">
+    </div>
+    <div class="footer-copyright">
+        &copy; 2026 QUICKGOV PH. ALL RIGHTS RESERVED.
+    </div>
+  </footer>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-  import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
-
-  const firebaseConfig = { apiKey: "AIzaSyB12w_rz613qgUI1G9N0JeHpkqs5FC1T-g", authDomain: "quickgov-ph.firebaseapp.com", databaseURL: "https://quickgov-ph-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "quickgov-ph", storageBucket: "quickgov-ph.firebasestorage.app", messagingSenderId: "370121513915", appId: "1:370121513915:web:a9cad3a4af0f18a063429e" };
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getDatabase(app);
-
-  function showLoader(msg) {
-    document.getElementById('loader').style.display = 'flex';
-    document.getElementById('loader-text').innerText = msg;
-  }
-  function hideLoader() { document.getElementById('loader').style.display = 'none'; }
-
-  // AUTO-LOGIN LOGIC
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      showLoader("Verifying account...");
-      
-      if (user.emailVerified) {
-        const snapshot = await get(child(ref(db), `users/${user.uid}`));
-        if (snapshot.exists()) {
-          if (snapshot.val().status === "approved") {
-            window.location.href = "dashboard.html"; // Success Auto-login
-          } else {
-            await signOut(auth);
-            hideLoader();
-          }
-        } else {
-          // Might be an admin trying to login via resident portal, sign them out here
-          await signOut(auth);
-          hideLoader();
-        }
-      } else {
-        await signOut(auth);
-        hideLoader();
-      }
-    } else {
-      hideLoader();
-    }
-  });
-
-  window.forgotPassword = async () => {
-    const email = document.getElementById('logEmail').value;
-    if(!email) return alert("Please type your email address in the field first.");
-    showLoader("Sending Reset Link...");
-    try {
-      await sendPasswordResetEmail(auth, email);
-      hideLoader();
-      alert("Password reset link sent! Check your inbox.");
-    } catch(err) {
-      hideLoader();
-      alert("Error: " + err.message);
-    }
-  };
-
-  window.loginResident = async () => {
-    const e = document.getElementById('logEmail').value;
-    const p = document.getElementById('logPass').value;
-    if(!e || !p) return alert("Please fill all fields.");
-    
-    showLoader("Signing In...");
-    try {
-      const userCred = await signInWithEmailAndPassword(auth, e, p);
-      const user = userCred.user;
-
-      if (!user.emailVerified) {
-        hideLoader();
-        await signOut(auth);
-        return alert("Your email is not verified yet. Please check your inbox.");
-      }
-
-      const snapshot = await get(child(ref(db), `users/${user.uid}`));
-      if (snapshot.exists()) {
-        if (snapshot.val().status === "approved") {
-          window.location.href = "dashboard.html";
-        } else {
-          hideLoader();
-          await signOut(auth);
-          alert("Account is verified but awaiting Admin approval.");
-        }
-      } else {
-        hideLoader();
-        await signOut(auth);
-        alert("Account records not found.");
-      }
-    } catch(err) {
-      hideLoader();
-      alert("Login Failed: Incorrect email or password.");
-    }
-  };
-</script>
+  <script type="module" src="./js/login.js"></script>
 </body>
 </html>
