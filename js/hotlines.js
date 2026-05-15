@@ -242,7 +242,7 @@ onAuthStateChanged(auth, async (user) => {
         // This triggers the auto-fetch for the location and hotlines!
         window.pingLocation();
 
-      } else { window.location.href = "index.html"; }
+      } else { window.location.href = "index"; }
     } catch (error) { console.error(error); }
-  } else { window.location.href = "index.html"; }
+  } else { window.location.href = "index"; }
 });
