@@ -2,7 +2,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/fireba
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 import { getDatabase, ref, get, child, onValue, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-// Make toggleMenu accessible globally for the HTML onclick handlers
 window.toggleMenu = function() {
   document.getElementById('sidebar').classList.toggle('expanded');
   document.getElementById('mobileOverlay').classList.toggle('active');
@@ -26,11 +25,10 @@ window.logoutUser = async function() {
   if(confirm("Are you sure you want to sign out?")) {
     document.getElementById('pageTransition').classList.remove('hidden');
     await signOut(auth);
-    window.location.href = "login.html";
+    window.location.href = "login";
   }
 };
 
-// 1. REAL-TIME OFFICE STATUS & AVG PROCESSING
 const officeStatusRef = ref(db, 'adminSettings/officeStatus');
 onValue(officeStatusRef, (snapshot) => {
   const statusElem = document.getElementById('officeStatusDisplay');
@@ -48,7 +46,6 @@ onValue(avgProcessingRef, (snapshot) => {
   document.getElementById('stat-processing').textContent = snapshot.exists() ? snapshot.val() : "2";
 });
 
-// 2. LOAD USER STATS (Requests Counter)
 function loadUserStats(uid) {
   const requestsQuery = query(ref(db, 'requests'), orderByChild('userId'), equalTo(uid));
   onValue(requestsQuery, (snapshot) => {
@@ -71,7 +68,6 @@ function loadUserStats(uid) {
   });
 }
 
-// 3. CHECK AUTH STATE & LOAD USER PROFILE
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     try {
@@ -85,7 +81,7 @@ onAuthStateChanged(auth, async (user) => {
         if (userData.status !== "approved") {
           alert("Your account is pending review or restricted. You cannot access the dashboard.");
           await signOut(auth);
-          window.location.href = "login.html";
+          window.location.href = "login";
           return;
         }
 
@@ -141,6 +137,6 @@ onAuthStateChanged(auth, async (user) => {
       console.error("Error fetching user data:", error);
     }
   } else {
-    window.location.href = "index.html";
+    window.location.href = "index";
   }
 });
