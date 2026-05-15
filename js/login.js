@@ -83,7 +83,7 @@ window.loginResident = async () => {
     const snapshot = await get(child(ref(db), `users/${user.uid}`));
     if (snapshot.exists()) {
       if (snapshot.val().status === "approved") {
-        window.location.href = "dashboard.html";
+        window.location.href = "dashboard";
       } else {
         hideLoader();
         await signOut(auth);
