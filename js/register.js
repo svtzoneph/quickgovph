@@ -120,7 +120,7 @@ window.registerResident = async () => {
     hideLoader();
     await signOut(auth); 
     alert("Registration successful! Verify your email using the link sent to you, then wait for Admin approval.");
-    window.location.href = "login.html";
+    window.location.href = "login";
     
   } catch(err) {
     hideLoader();
