@@ -114,6 +114,22 @@
   </div>
 </div>
 
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(() => { document.getElementById('pageTransition').classList.add('hidden'); }, 300);
+  });
+
+  window.navigateTo = function(url) {
+    document.getElementById('pageTransition').classList.remove('hidden');
+    setTimeout(() => { window.location.href = url; }, 350);
+  }
+
+  function toggleMenu() {
+    document.getElementById('sidebar').classList.toggle('expanded');
+    document.getElementById('mobileOverlay').classList.toggle('active');
+  }
+</script>
+
 <script type="module" src="./js/hotlines.js"></script>
 
 </body>
