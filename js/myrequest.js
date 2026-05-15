@@ -179,7 +179,7 @@ onAuthStateChanged(auth, async (user) => {
         currentUserData = snapshot.val();
         if (currentUserData.status !== "approved") {
           await signOut(auth);
-          window.location.href = "index.html";
+          window.location.href = "index";
           return;
         }
 
