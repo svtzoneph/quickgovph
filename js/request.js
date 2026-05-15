@@ -17,7 +17,6 @@ window.toggleMenu = function() {
   document.getElementById('mobileOverlay').classList.toggle('active');
 };
 
-// --- FIREBASE SETUP ---
 const firebaseConfig = { 
   apiKey: "AIzaSyB12w_rz613qgUI1G9N0JeHpkqs5FC1T-g", 
   authDomain: "quickgov-ph.firebaseapp.com", 
@@ -91,7 +90,6 @@ async function uploadToCloudinary(file) {
   return data.secure_url;
 }
 
-// --- SUBMIT LOGIC ---
 document.getElementById('submitRequestBtn').addEventListener('click', async () => {
   if(!currentUser || !currentUserData) return alert("You must be logged in to submit a request.");
   
@@ -201,7 +199,7 @@ window.logoutUser = async function() {
   if(confirm("Are you sure you want to sign out?")) {
     document.getElementById('pageTransition').classList.remove('hidden');
     await signOut(auth);
-    window.location.href = "login.html";
+    window.location.href = "login";
   }
 };
 
