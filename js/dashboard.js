@@ -131,7 +131,7 @@ onAuthStateChanged(auth, async (user) => {
       } else {
         // No user data found
         await signOut(auth);
-        window.location.href = "index.html";
+        window.location.href = "index";
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
