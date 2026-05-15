@@ -261,7 +261,7 @@ onAuthStateChanged(auth, async (user) => {
         currentUserData = snapshot.val();
         if (currentUserData.status !== "approved") {
           await signOut(auth);
-          window.location.href = "index.html";
+          window.location.href = "index";
           return;
         }
 
@@ -281,6 +281,6 @@ onAuthStateChanged(auth, async (user) => {
       }
     } catch (error) { console.error("Auth error:", error); }
   } else {
-    window.location.href = "index.html";
+    window.location.href = "index";
   }
 });
