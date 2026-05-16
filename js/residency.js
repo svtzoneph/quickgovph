@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initMap() {
-  // Naka-zoom muna sa buong Pilipinas habang naghihintay ng GPS
+  // Center roughly on the Philippines initially
   map = L.map('map', { 
       zoomControl: false, 
       maxBounds: phBounds, 
@@ -120,7 +120,7 @@ function initMap() {
   if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(
       position => {
-        // Mag-loload lang ng data kapag na-allow at nakuha na yung GPS
+        // Only load data when exact GPS is secured
         processLocationData(position.coords.latitude, position.coords.longitude, true);
       },
       error => {
@@ -239,6 +239,10 @@ async function processLocationData(lat, lng, centerMap = false) {
   document.getElementById('pageTransition').classList.add('hidden');
 }
 
+// ------------------------------------------
+// PROXY INTEGRATION: fetchBoundaries 
+// Uses Vercel Serverless Function to bypass CORS
+// ------------------------------------------
 async function fetchBoundaries(city, brgy) {
     if(!document.getElementById('layerBrgy').checked) return;
     boundariesLayer.clearLayers();
@@ -255,20 +259,27 @@ async function fetchBoundaries(city, brgy) {
     if(brgy) {
         try {
             const bQuery = `[out:json][timeout:10];relation["name"~"${brgy}",i]["admin_level"="10"];out geom;`;
-            const bRes = await fetch('https://overpass-api.de/api/interpreter', { 
+            
+            // Calls the Vercel Proxy instead of Overpass directly
+            const bRes = await fetch('/api/overpass', { 
                 method: 'POST', 
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `data=${encodeURIComponent(bQuery)}` 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: bQuery }) 
             });
             const bData = await bRes.json();
+            
             if(bData.elements && bData.elements.length > 0) {
                 const bounds = bData.elements[0].bounds;
                 L.rectangle([[bounds.minlat, bounds.minlon], [bounds.maxlat, bounds.maxlon]], {color: 'var(--success)', weight: 2, fillOpacity: 0.1}).addTo(boundariesLayer);
             }
-        } catch(e) { console.error("Overpass boundary error:", e); }
+        } catch(e) { console.error("Overpass boundary error (via Proxy):", e); }
     }
 }
 
+// ------------------------------------------
+// PROXY INTEGRATION: fetchFacilities
+// Uses Vercel Serverless Function to bypass CORS
+// ------------------------------------------
 async function fetchFacilities(lat, lng) {
   const radius = 8000;
   const query = `
@@ -285,10 +296,11 @@ async function fetchFacilities(lat, lng) {
   `;
 
   try {
-    const response = await fetch('https://overpass-api.de/api/interpreter', { 
+    // Calls the Vercel Proxy instead of Overpass directly
+    const response = await fetch('./api/overpass', { 
         method: 'POST', 
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `data=${encodeURIComponent(query)}` 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: query }) 
     });
     
     const data = await response.json();
@@ -318,8 +330,8 @@ async function fetchFacilities(lat, lng) {
     renderPlacesList('all'); 
     generateMockHeatmap(placesData);
   } catch (e) {
-    console.error("Overpass facilities error:", e);
-    document.getElementById('placesContainer').innerHTML = `<div class="status-msg" style="color:var(--danger)">Network error fetching GIS data.</div>`;
+    console.error("Overpass facilities error (via Proxy):", e);
+    document.getElementById('placesContainer').innerHTML = `<div class="status-msg" style="color:var(--danger)">Network error fetching GIS data via proxy.</div>`;
   }
 }
 
@@ -528,7 +540,6 @@ window.triggerSOS = async function() {
     }
 }
 
-// --- FIREBASE AUTH & USER DATA ---
 window.sendSOSToFirebase = async function(lat, lng) {
   try {
     const user = auth.currentUser;
@@ -569,7 +580,7 @@ window.logoutUser = async function() {
   if(confirm("Are you sure you want to sign out?")) {
     document.getElementById('pageTransition').classList.remove('hidden');
     await signOut(auth);
-    window.location.href = "login.html";
+    window.location.href = "login";
   }
 };
 
