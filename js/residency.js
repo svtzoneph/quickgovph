@@ -87,12 +87,13 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initMap() {
+  // Naka-zoom muna sa buong Pilipinas habang naghihintay ng GPS
   map = L.map('map', { 
       zoomControl: false, 
       maxBounds: phBounds, 
       maxBoundsViscosity: 1.0,
       minZoom: 6
-  }).setView([14.2750, 120.7350], 13);
+  }).setView([12.8797, 121.7740], 6); 
   
   L.control.zoom({ position: 'topright' }).addTo(map);
   currentTileLayer = L.tileLayer(lightTileUrl, { attribution: '© OpenStreetMap & CartoDB' }).addTo(map);
@@ -113,19 +114,25 @@ function initMap() {
       processLocationData(e.latlng.lat, e.latlng.lng, true);
   });
 
+  document.getElementById('pageTransition').classList.remove('hidden');
+  document.getElementById('loader-text').innerText = "Acquiring your exact location...";
+
   if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(
       position => {
+        // Mag-loload lang ng data kapag na-allow at nakuha na yung GPS
         processLocationData(position.coords.latitude, position.coords.longitude, true);
       },
       error => {
-        console.warn("Location denied or unavailable, using fallback.");
-        processLocationData(14.2750, 120.7350, true);
+        document.getElementById('pageTransition').classList.add('hidden');
+        console.warn("Location permission denied or unavailable.");
+        alert("Please allow location access in your browser to auto-locate you and find nearby facilities.");
       }, 
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   } else {
-    processLocationData(14.2750, 120.7350, true);
+    document.getElementById('pageTransition').classList.add('hidden');
+    alert("Geolocation is not supported by your browser.");
   }
 }
 
@@ -243,18 +250,22 @@ async function fetchBoundaries(city, brgy) {
       if (data && data[0]?.geojson) {
           L.geoJSON(data[0].geojson, { style: { color: 'var(--accent)', weight: 3, opacity: 0.8, fillColor: 'var(--accent)', fillOpacity: 0.05, dashArray: '10, 10' } }).addTo(boundariesLayer);
       }
-    } catch(e) {}
-
+    } catch(e) { console.error("Nominatim boundary error:", e); }
+  
     if(brgy) {
         try {
             const bQuery = `[out:json][timeout:10];relation["name"~"${brgy}",i]["admin_level"="10"];out geom;`;
-            const bRes = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: bQuery });
+            const bRes = await fetch('https://overpass-api.de/api/interpreter', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `data=${encodeURIComponent(bQuery)}` 
+            });
             const bData = await bRes.json();
-            if(bData.elements.length > 0) {
+            if(bData.elements && bData.elements.length > 0) {
                 const bounds = bData.elements[0].bounds;
                 L.rectangle([[bounds.minlat, bounds.minlon], [bounds.maxlat, bounds.maxlon]], {color: 'var(--success)', weight: 2, fillOpacity: 0.1}).addTo(boundariesLayer);
             }
-        } catch(e) {}
+        } catch(e) { console.error("Overpass boundary error:", e); }
     }
 }
 
@@ -274,7 +285,12 @@ async function fetchFacilities(lat, lng) {
   `;
 
   try {
-    const response = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: query });
+    const response = await fetch('https://overpass-api.de/api/interpreter', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `data=${encodeURIComponent(query)}` 
+    });
+    
     const data = await response.json();
     
     placesData = data.elements.filter(e => e.tags && e.tags.name).map(e => {
@@ -299,9 +315,10 @@ async function fetchFacilities(lat, lng) {
     }).filter(p => p.lat !== null).sort((a, b) => a.distance - b.distance);
 
     document.getElementById('facilityCount').innerText = placesData.length;
-    renderPlacesList('all'); // Show all by default
+    renderPlacesList('all'); 
     generateMockHeatmap(placesData);
   } catch (e) {
+    console.error("Overpass facilities error:", e);
     document.getElementById('placesContainer').innerHTML = `<div class="status-msg" style="color:var(--danger)">Network error fetching GIS data.</div>`;
   }
 }
